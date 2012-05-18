@@ -42,7 +42,7 @@ function BFRenderClass(imageFilePath)
     _instance.FoundationSize = new BFSizeClass(0, 0);
     _instance.ZOrder = 0;
 
-    var _image = BFResourceContainer.GetImage(imageFilePath);
+    _instance._image = BFResourceContainer.GetImage(imageFilePath);
 
     /**
      * 每帧都会调用Draw方法绘制
@@ -50,35 +50,31 @@ function BFRenderClass(imageFilePath)
      */
     _instance.Draw = function ()
     {
-        if (_image.ImageLoaded)
+        if (_instance._image.ImageLoaded)
         {
-            if (_instance.Update == null)
-            {
-                _instance.SLocation.X = 0;
-                _instance.SLocation.Y = 0;
-                _instance.SSize.Width = _image.ImageCanvas.width;
-                _instance.SSize.Height = _image.ImageCanvas.height;
-                _instance.DLocation.X = 0;
-                _instance.DLocation.Y = 0;
-                _instance.DSize.Width = _image.ImageCanvas.width;
-                _instance.DSize.Height = _image.ImageCanvas.height;
-                _instance.CSize.Width = _image.ImageCanvas.width;
-                _instance.CSize.Height = _image.ImageCanvas.height;
-            }
-            else
-            {
-                _instance.Update();
-            }
             _instance.RenderCanvas.width = _instance.CSize.Width;
             _instance.RenderCanvas.height = _instance.CSize.Height;
-            _instance.RenderContext.drawImage(_image.ImageCanvas, _instance.SLocation.X, _instance.SLocation.Y, _instance.SSize.Width, _instance.SSize.Height, _instance.DLocation.X, _instance.DLocation.Y, _instance.DSize.Width, _instance.DSize.Height);
+            _instance.RenderContext.drawImage(_instance._image.ImageCanvas, _instance.SLocation.X, _instance.SLocation.Y, _instance.SSize.Width, _instance.SSize.Height, _instance.DLocation.X, _instance.DLocation.Y, _instance.DSize.Width, _instance.DSize.Height);
         }
     };
 
     /**
-     * 更新该绘图单元的位置及尺寸
+     * 每帧都会调用Update方法更新该绘图单元的位置及尺寸
+     * @constructor
      */
-    _instance.Update = null;
+    _instance.Update = function ()
+    {
+        _instance.SLocation.X = 0;
+        _instance.SLocation.Y = 0;
+        _instance.SSize.Width = _instance._image.ImageCanvas.width;
+        _instance.SSize.Height = _instance._image.ImageCanvas.height;
+        _instance.DLocation.X = 0;
+        _instance.DLocation.Y = 0;
+        _instance.DSize.Width = _instance._image.ImageCanvas.width;
+        _instance.DSize.Height = _instance._image.ImageCanvas.height;
+        _instance.CSize.Width = _instance._image.ImageCanvas.width;
+        _instance.CSize.Height = _instance._image.ImageCanvas.height;
+    };
 
     /**
      * 切换该绘图单元的图片
@@ -87,11 +83,11 @@ function BFRenderClass(imageFilePath)
      */
     _instance.ChangeImage = function (imageFilePath)
     {
-        if (_image.ImageFilePath == imageFilePath)
+        if (_instance._image.ImageFilePath == imageFilePath)
         {
             return;
         }
-        _image = BFResourceContainer.GetImage(imageFilePath);
+        _instance._image = BFResourceContainer.GetImage(imageFilePath);
     };
 
     /**

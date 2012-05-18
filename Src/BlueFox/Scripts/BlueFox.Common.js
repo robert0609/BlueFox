@@ -18,7 +18,7 @@ GetBFGlobal();
 /**
  * 构造全局变量缓存对象
  * @return {object}
- * @constructor
+ * @method
  */
 function GetBFGlobal()
 {
