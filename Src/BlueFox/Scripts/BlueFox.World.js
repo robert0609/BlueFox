@@ -5,6 +5,12 @@
  * Time: 下午5:33
  * To change this template use File | Settings | File Templates.
  */
+
+(function ()
+{
+    BFMapCellClass.prototype = new BFRenderClass('./Resource/Img/mapCell.jpg');
+}());
+
 function BFWorldClass()
 {
     BFGlobal.MapCellUnitLength = 64;
@@ -21,7 +27,6 @@ function BFMapClass()
     {
         for (var y = 1; y < 11; ++y)
         {
-            BFMapCellClass.prototype = new BFRenderClass('./Resource/Img/mapCell.jpg');
             var mapCell = new BFMapCellClass(x, y, './Resource/Img/mapCell.jpg');
             this.CellList.push(mapCell);
         }
