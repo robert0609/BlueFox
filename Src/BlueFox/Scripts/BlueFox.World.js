@@ -7,14 +7,25 @@
  */
 function BFWorldClass()
 {
-    BFGlobal.MapCellUnitLength = 50;
+    BFGlobal.MapCellUnitLength = 64;
     BFGlobal.FoundationCellWidth = 20;
     BFGlobal.FoundationCellHeight = 10;
+    BFGlobal.LookAngle = Math.PI / 6;
 }
 
 function BFMapClass()
 {
+    this.CellList = new Array();
 
+    for (var x = 1; x < 11; ++x)
+    {
+        for (var y = 1; y < 11; ++y)
+        {
+            BFMapCellClass.prototype = new BFRenderClass('./Resource/Img/mapCell.jpg');
+            var mapCell = new BFMapCellClass(x, y, './Resource/Img/mapCell.jpg');
+            this.CellList.push(mapCell);
+        }
+    }
 }
 
 /**
@@ -26,25 +37,20 @@ function BFMapClass()
  */
 function BFMapCellClass(xIndex, yIndex, imageFilePath)
 {
-    // 继承BFRenderClass类
-    BFMapCellClass.prototype = new BFRenderClass(imageFilePath);
-    // 将当前创建的实例缓存起来
-    var _instance = this;
+    this.CLocation = ConvertMapIndex2Location(xIndex, yIndex);
+    this.CSize.Width = BFGlobal.MapCellUnitLength;
+    this.CSize.Height = BFGlobal.MapCellUnitLength;
 
-    _instance.CLocation = ConvertMapIndex2Location(xIndex, yIndex);
-    _instance.CSize.Width = BFGlobal.MapCellUnitLength;
-    _instance.CSize.Height = BFGlobal.MapCellUnitLength;
-
-    _instance.Update = function ()
+    this.Update = function ()
     {
-        _instance.SLocation.X = 0;
-        _instance.SLocation.Y = 0;
-        _instance.SSize.Width = BFGlobal.MapCellUnitLength;
-        _instance.SSize.Height = BFGlobal.MapCellUnitLength;
-        _instance.DLocation.X = 0;
-        _instance.DLocation.Y = 0;
-        _instance.DSize.Width = BFGlobal.MapCellUnitLength;
-        _instance.DSize.Height = BFGlobal.MapCellUnitLength;
+        this.SLocation.X = 0;
+        this.SLocation.Y = 0;
+        this.SSize.Width = BFGlobal.MapCellUnitLength;
+        this.SSize.Height = BFGlobal.MapCellUnitLength;
+        this.DLocation.X = 0;
+        this.DLocation.Y = 0;
+        this.DSize.Width = BFGlobal.MapCellUnitLength;
+        this.DSize.Height = BFGlobal.MapCellUnitLength;
     };
 }
 

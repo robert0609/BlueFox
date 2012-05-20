@@ -10,14 +10,14 @@ $(
     {
         try
         {
-            var testRender = new BFRenderClass('./Resource/Img/loading.png');
+            /*var testRender = new BFRenderClass('./Resource/Img/loading.png');
             testRender.CLocation.X = 0;
             testRender.CLocation.Y = 0;
-            testRender.AppendTo(document.body);
+            testRender.AppendTo(document.body);*/
 
             var app = new BFApplicationClass();
-            app.Render = testRender;
             app.Run();
+
         }
         catch (ex)
         {

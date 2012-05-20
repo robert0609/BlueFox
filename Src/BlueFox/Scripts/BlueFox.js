@@ -23,38 +23,35 @@ var BFRefreshList = new BFRefreshListClass();
  */
 function BFRenderClass(imageFilePath)
 {
-    // 将当前创建的实例缓存起来
-    var _instance = this;
+    this.RenderCanvas = document.createElement('canvas');
+    this.RenderContext = this.RenderCanvas.getContext('2d');
 
-    _instance.RenderCanvas = document.createElement('canvas');
-    _instance.RenderContext = _instance.RenderCanvas.getContext('2d');
+    this.CLocation = new BFLocationClass(0, 0);
+    this.CSize = new BFSizeClass(0, 0);
 
-    _instance.CLocation = new BFLocationClass(0, 0);
-    _instance.CSize = new BFSizeClass(0, 0);
+    this.SLocation = new BFLocationClass(0, 0);
+    this.SSize = new BFSizeClass(0, 0);
 
-    _instance.SLocation = new BFLocationClass(0, 0);
-    _instance.SSize = new BFSizeClass(0, 0);
+    this.DLocation = new BFLocationClass(0, 0);
+    this.DSize = new BFSizeClass(0, 0);
 
-    _instance.DLocation = new BFLocationClass(0, 0);
-    _instance.DSize = new BFSizeClass(0, 0);
+    this.FoundationLocation = new BFLocationClass(0, 0);
+    this.FoundationSize = new BFSizeClass(0, 0);
+    this.ZOrder = 0;
 
-    _instance.FoundationLocation = new BFLocationClass(0, 0);
-    _instance.FoundationSize = new BFSizeClass(0, 0);
-    _instance.ZOrder = 0;
-
-    _instance._image = BFResourceContainer.GetImage(imageFilePath);
+    this._image = BFResourceContainer.GetImage(imageFilePath);
 
     /**
      * 每帧都会调用Draw方法绘制
      * @constructor
      */
-    _instance.Draw = function ()
+    this.Draw = function ()
     {
-        if (_instance._image.ImageLoaded)
+        if (this._image.ImageLoaded)
         {
-            _instance.RenderCanvas.width = _instance.CSize.Width;
-            _instance.RenderCanvas.height = _instance.CSize.Height;
-            _instance.RenderContext.drawImage(_instance._image.ImageCanvas, _instance.SLocation.X, _instance.SLocation.Y, _instance.SSize.Width, _instance.SSize.Height, _instance.DLocation.X, _instance.DLocation.Y, _instance.DSize.Width, _instance.DSize.Height);
+            this.RenderCanvas.width = this.CSize.Width;
+            this.RenderCanvas.height = this.CSize.Height;
+            this.RenderContext.drawImage(this._image.ImageCanvas, this.SLocation.X, this.SLocation.Y, this.SSize.Width, this.SSize.Height, this.DLocation.X, this.DLocation.Y, this.DSize.Width, this.DSize.Height);
         }
     };
 
@@ -62,18 +59,13 @@ function BFRenderClass(imageFilePath)
      * 每帧都会调用Update方法更新该绘图单元的位置及尺寸
      * @constructor
      */
-    _instance.Update = function ()
+    this.Update = function ()
     {
-        _instance.SLocation.X = 0;
-        _instance.SLocation.Y = 0;
-        _instance.SSize.Width = _instance._image.ImageCanvas.width;
-        _instance.SSize.Height = _instance._image.ImageCanvas.height;
-        _instance.DLocation.X = 0;
-        _instance.DLocation.Y = 0;
-        _instance.DSize.Width = _instance._image.ImageCanvas.width;
-        _instance.DSize.Height = _instance._image.ImageCanvas.height;
-        _instance.CSize.Width = _instance._image.ImageCanvas.width;
-        _instance.CSize.Height = _instance._image.ImageCanvas.height;
+        this.SLocation = new BFLocationClass(0, 0);
+        this.SSize = new BFSizeClass(this._image.ImageCanvas.width, this._image.ImageCanvas.height);
+        this.DLocation = new BFLocationClass(0, 0);
+        this.DSize = new BFSizeClass(this._image.ImageCanvas.width, this._image.ImageCanvas.height);
+        this.CSize = new BFSizeClass(this._image.ImageCanvas.width, this._image.ImageCanvas.height);
     };
 
     /**
@@ -81,13 +73,13 @@ function BFRenderClass(imageFilePath)
      * @param imageFilePath: string类型 图片文件相对路径
      * @constructor
      */
-    _instance.ChangeImage = function (imageFilePath)
+    this.ChangeImage = function (imageFilePath)
     {
-        if (_instance._image.ImageFilePath == imageFilePath)
+        if (this._image.ImageFilePath == imageFilePath)
         {
             return;
         }
-        _instance._image = BFResourceContainer.GetImage(imageFilePath);
+        this._image = BFResourceContainer.GetImage(imageFilePath);
     };
 
     /**
@@ -95,22 +87,10 @@ function BFRenderClass(imageFilePath)
      * @param element: 要追加至的DOM元素
      * @constructor
      */
-    _instance.AppendTo = function (element)
+    this.AppendTo = function (element)
     {
-        element.appendChild(_instance.RenderCanvas);
+        element.appendChild(this.RenderCanvas);
     };
-
-    /*_instance.MoveTo(targetLocation)
-    {
-        if (targetLocation instanceof BFLocationClass)
-        {
-
-        }
-        else
-        {
-            throw '参数不是BFLocationClass类型';
-        }
-    }*/
 }
 
 /**
@@ -119,12 +99,9 @@ function BFRenderClass(imageFilePath)
  */
 function BFResourceContainerClass()
 {
-    // 将当前创建的实例缓存起来
-    var _instance = this;
-
     var _imageDic = new BFDictionaryClass();
 
-    _instance.GetImage = function (imageFilePath)
+    this.GetImage = function (imageFilePath)
     {
         if (_imageDic.ContainsKey(imageFilePath))
         {
@@ -146,17 +123,15 @@ function BFResourceContainerClass()
  */
 function BFImage(imageFilePath)
 {
-    // 将当前创建的实例缓存起来
+    this._image = new Image();
+    this.ImageCanvas = document.createElement('canvas');
+    this.ImageCanvas.width = 32;
+    this.ImageCanvas.height = 32;
+    this.ImageLoaded = false;
+    var _context = this.ImageCanvas.getContext('2d');
+
     var _instance = this;
-
-    _instance._image = new Image();
-    _instance.ImageCanvas = document.createElement('canvas');
-    _instance.ImageCanvas.width = 32;
-    _instance.ImageCanvas.height = 32;
-    _instance.ImageLoaded = false;
-    var _context = _instance.ImageCanvas.getContext('2d');
-
-    _instance._image.onload = function ()
+    this._image.onload = function ()
     {
         _instance.ImageCanvas.width = this.width;
         _instance.ImageCanvas.height = this.height;
@@ -164,8 +139,8 @@ function BFImage(imageFilePath)
         _instance.ImageLoaded = true;
     };
 
-    _instance._image.src = imageFilePath;
-    _instance.ImageFilePath = imageFilePath;
+    this._image.src = imageFilePath;
+    this.ImageFilePath = imageFilePath;
 }
 
 /**
@@ -174,23 +149,31 @@ function BFImage(imageFilePath)
  */
 function BFRefreshListClass()
 {
-    // 将当前创建的实例缓存起来
-    var _instance = this;
 }
 
 function BFApplicationClass()
 {
-    // 将当前创建的实例缓存起来
-    var _instance = this;
+    var _bufferCanvas = document.createElement('canvas');
+    _bufferCanvas.width = 800;
+    _bufferCanvas.height = 600;
+    document.body.appendChild(_bufferCanvas);
+    var _bufferContext = _bufferCanvas.getContext('2d');
 
-    _instance.Render = null;
+    BFWorldClass();
+    var map = new BFMapClass();
 
     var _draw = function ()
     {
-        _instance.Render.Draw();
+        for (var i = 0; i < map.CellList.length; ++i)
+        {
+            map.CellList[i].Update();
+            map.CellList[i].Draw();
+            _bufferContext.drawImage(map.CellList[i].RenderCanvas, 0, 0, map.CellList[i].CSize.Width, map.CellList[i].CSize.Height, map.CellList[i].CLocation.X, map.CellList[i].CLocation.Y, map.CellList[i].CSize.Width, map.CellList[i].CSize.Height);
+        }
+
     };
 
-    _instance.Run = function ()
+    this.Run = function ()
     {
         window.setInterval(_draw, BFGlobal.Interval);
     };

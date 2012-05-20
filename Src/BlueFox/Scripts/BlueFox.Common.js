@@ -75,14 +75,11 @@ function BFKeyValuePairClass(key, value)
  */
 function BFDictionaryClass()
 {
-    // 将当前创建的实例缓存起来
-    var _instance = this;
-
     var _innerList = new Array();
 
-    _instance.Add = function (key, value)
+    this.Add = function (key, value)
     {
-        if (_instance.ContainsKey(key))
+        if (this.ContainsKey(key))
         {
             throw 'BFDictionary已经存在Key:' + key + '，无法重复添加';
         }
@@ -93,7 +90,7 @@ function BFDictionaryClass()
         }
     };
 
-    _instance.Get = function (key)
+    this.Get = function (key)
     {
         var ret = null;
         for (var i = 0; i < _innerList.length; ++i)
@@ -107,7 +104,7 @@ function BFDictionaryClass()
         return ret;
     };
 
-    _instance.ContainsKey = function (key)
+    this.ContainsKey = function (key)
     {
         var ret = false;
         for (var i = 0; i < _innerList.length; ++i)
