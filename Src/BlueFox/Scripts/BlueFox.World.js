@@ -5,18 +5,33 @@
  * Time: 下午5:33
  * To change this template use File | Settings | File Templates.
  */
-
+/**
+ * ------Global variant declare area Begin------
+ */
+/**
+ * ------Global variant declare area End------
+ */
+/**
+ * ------Javascript file onload callback Begin------
+ */
+/**
+ * js文件加载执行回调
+ */
 (function ()
 {
-    BFMapCellClass.prototype = new BFRenderClass('./Resource/Img/mapCell.jpg');
-}());
+    BFMapCellClass.prototype = new BFRenderClass(null);
 
-function BFWorldClass()
-{
     BFGlobal.MapCellUnitLength = 64;
     BFGlobal.FoundationCellWidth = 20;
     BFGlobal.FoundationCellHeight = 10;
     BFGlobal.LookAngle = Math.PI / 6;
+}());
+/**
+ * ------Javascript file onload callback End------
+ */
+
+function BFWorldClass()
+{
 }
 
 function BFMapClass()
@@ -27,10 +42,20 @@ function BFMapClass()
     {
         for (var y = 1; y < 11; ++y)
         {
-            var mapCell = new BFMapCellClass(x, y, './Resource/Img/mapCell.jpg');
+            var mapCell = new BFMapCellClass(x, y);
+            mapCell.SetImage('./Resource/Img/mapCell.jpg');
             this.CellList.push(mapCell);
         }
     }
+
+    this.Draw = function (context)
+    {
+        for (var i = 0; i < this.CellList.length; ++i)
+        {
+            this.CellList[i].Update();
+            this.CellList[i].Draw(context);
+        }
+    };
 }
 
 /**
@@ -40,7 +65,7 @@ function BFMapClass()
  * @param imageFilePath: 该单元格的加载图片
  * @constructor
  */
-function BFMapCellClass(xIndex, yIndex, imageFilePath)
+function BFMapCellClass(xIndex, yIndex)
 {
     this.CLocation = ConvertMapIndex2Location(xIndex, yIndex);
     this.CSize.Width = BFGlobal.MapCellUnitLength;

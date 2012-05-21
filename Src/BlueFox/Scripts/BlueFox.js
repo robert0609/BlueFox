@@ -6,15 +6,36 @@
  * To change this template use File | Settings | File Templates.
  */
 /**
+ * ------Global variant declare area Begin------
+ */
+/**
  * 所有资源的容器
  * @type {BFResourceContainerClass}
  */
-var BFResourceContainer = new BFResourceContainerClass();
+var BFResourceContainer = null;
 /**
  * 需要每帧刷新的对象列表
  * @type {BFRefreshListClass}
  */
-var BFRefreshList = new BFRefreshListClass();
+var BFRefreshList = null;
+/**
+ * ------Global variant declare area End------
+ */
+/**
+ * ------Javascript file onload callback Begin------
+ */
+/**
+ * js文件加载执行回调
+ */
+(function ()
+{
+    BFResourceContainer = new BFResourceContainerClass();
+    BFRefreshList = new BFRefreshListClass();
+}());
+/**
+ * ------Javascript file onload callback End------
+ */
+
 
 /**
  * 基本绘图单元
@@ -23,9 +44,6 @@ var BFRefreshList = new BFRefreshListClass();
  */
 function BFRenderClass(imageFilePath)
 {
-    this.RenderCanvas = document.createElement('canvas');
-    this.RenderContext = this.RenderCanvas.getContext('2d');
-
     this.CLocation = new BFLocationClass(0, 0);
     this.CSize = new BFSizeClass(0, 0);
 
@@ -39,19 +57,24 @@ function BFRenderClass(imageFilePath)
     this.FoundationSize = new BFSizeClass(0, 0);
     this.ZOrder = 0;
 
-    this._image = BFResourceContainer.GetImage(imageFilePath);
+    if (imageFilePath == undefined || imageFilePath == null)
+    {
+        this._image = BFResourceContainer.GetImage('');
+    }
+    else
+    {
+        this._image = BFResourceContainer.GetImage(imageFilePath);
+    }
 
     /**
      * 每帧都会调用Draw方法绘制
      * @constructor
      */
-    this.Draw = function ()
+    this.Draw = function (context)
     {
         if (this._image.ImageLoaded)
         {
-            this.RenderCanvas.width = this.CSize.Width;
-            this.RenderCanvas.height = this.CSize.Height;
-            this.RenderContext.drawImage(this._image.ImageCanvas, this.SLocation.X, this.SLocation.Y, this.SSize.Width, this.SSize.Height, this.DLocation.X, this.DLocation.Y, this.DSize.Width, this.DSize.Height);
+            context.drawImage(this._image.ImageCanvas, this.SLocation.X, this.SLocation.Y, this.SSize.Width, this.SSize.Height, this.CLocation.X, this.CLocation.Y, this.CSize.Width, this.CSize.Height);
         }
     };
 
@@ -73,13 +96,22 @@ function BFRenderClass(imageFilePath)
      * @param imageFilePath: string类型 图片文件相对路径
      * @constructor
      */
-    this.ChangeImage = function (imageFilePath)
+    this.SetImage = function (imageFilePath)
     {
-        if (this._image.ImageFilePath == imageFilePath)
+        var filePath;
+        if (imageFilePath == undefined || imageFilePath == null)
+        {
+            filePath = '';
+        }
+        else
+        {
+            filePath = imageFilePath;
+        }
+        if (this._image.ImageFilePath == filePath)
         {
             return;
         }
-        this._image = BFResourceContainer.GetImage(imageFilePath);
+        this._image = BFResourceContainer.GetImage(filePath);
     };
 
     /**
@@ -87,10 +119,10 @@ function BFRenderClass(imageFilePath)
      * @param element: 要追加至的DOM元素
      * @constructor
      */
-    this.AppendTo = function (element)
+    /*this.AppendTo = function (element)
     {
         element.appendChild(this.RenderCanvas);
-    };
+    };*/
 }
 
 /**
@@ -158,19 +190,13 @@ function BFApplicationClass()
     _bufferCanvas.height = 600;
     document.body.appendChild(_bufferCanvas);
     var _bufferContext = _bufferCanvas.getContext('2d');
+    _bufferContext.scale(1, Math.sin(BFGlobal.LookAngle));
 
-    BFWorldClass();
     var map = new BFMapClass();
 
     var _draw = function ()
     {
-        for (var i = 0; i < map.CellList.length; ++i)
-        {
-            map.CellList[i].Update();
-            map.CellList[i].Draw();
-            _bufferContext.drawImage(map.CellList[i].RenderCanvas, 0, 0, map.CellList[i].CSize.Width, map.CellList[i].CSize.Height, map.CellList[i].CLocation.X, map.CellList[i].CLocation.Y, map.CellList[i].CSize.Width, map.CellList[i].CSize.Height);
-        }
-
+        map.Draw(_bufferContext);
     };
 
     this.Run = function ()

@@ -6,32 +6,37 @@
  * To change this template use File | Settings | File Templates.
  */
 /**
+ * ------Global variant declare area Begin------
+ */
+/**
  * 全局变量缓存对象
  * @type {object}
  */
-var BFGlobal = null;
+var BFGlobal = BFGlobal || null;
 /**
- * 构造全局变量缓存对象
+ * ------Global variant declare area End------
  */
-GetBFGlobal();
-
 /**
- * 构造全局变量缓存对象
- * @return {object}
- * @method
+ * ------Javascript file onload callback Begin------
  */
-function GetBFGlobal()
+/**
+ * js文件加载执行回调
+ */
+(function ()
 {
     if (BFGlobal == null)
     {
         BFGlobal = new Object();
-        // 每秒帧数
-        BFGlobal.FPS = 30;
-        // 每帧间隔时间，毫秒
-        BFGlobal.Interval = 1000 / BFGlobal.FPS;
     }
-    return BFGlobal;
-}
+    // 每秒帧数
+    BFGlobal.FPS = 30;
+    // 每帧间隔时间，毫秒
+    BFGlobal.Interval = 1000 / BFGlobal.FPS;
+}());
+/**
+ * ------Javascript file onload callback End------
+ */
+
 
 /**
  * 位置类
