@@ -50,9 +50,6 @@ function BFRenderClass(imageFilePath)
     this.SLocation = new BFLocationClass(0, 0);
     this.SSize = new BFSizeClass(0, 0);
 
-    this.DLocation = new BFLocationClass(0, 0);
-    this.DSize = new BFSizeClass(0, 0);
-
     this.FoundationLocation = new BFLocationClass(0, 0);
     this.FoundationSize = new BFSizeClass(0, 0);
     this.ZOrder = 0;
@@ -86,8 +83,7 @@ function BFRenderClass(imageFilePath)
     {
         this.SLocation = new BFLocationClass(0, 0);
         this.SSize = new BFSizeClass(this._image.ImageCanvas.width, this._image.ImageCanvas.height);
-        this.DLocation = new BFLocationClass(0, 0);
-        this.DSize = new BFSizeClass(this._image.ImageCanvas.width, this._image.ImageCanvas.height);
+        this.CLocation = new BFLocationClass(0, 0);
         this.CSize = new BFSizeClass(this._image.ImageCanvas.width, this._image.ImageCanvas.height);
     };
 
@@ -186,17 +182,17 @@ function BFRefreshListClass()
 function BFApplicationClass()
 {
     var _bufferCanvas = document.createElement('canvas');
-    _bufferCanvas.width = 800;
-    _bufferCanvas.height = 600;
+    _bufferCanvas.width = 1280;
+    _bufferCanvas.height = 960;
     document.body.appendChild(_bufferCanvas);
     var _bufferContext = _bufferCanvas.getContext('2d');
-    _bufferContext.scale(1, Math.sin(BFGlobal.LookAngle));
 
     var map = new BFMapClass();
 
     var _draw = function ()
     {
-        map.Draw(_bufferContext);
+        map.Draw();
+        _bufferContext.drawImage(map.MapCanvas, 0, 0, map.MapCanvas.width, map.MapCanvas.height, 0, 0, map.MapCanvas.width, map.MapCanvas.height);
     };
 
     this.Run = function ()

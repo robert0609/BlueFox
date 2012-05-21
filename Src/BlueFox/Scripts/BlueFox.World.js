@@ -24,7 +24,7 @@
     BFGlobal.MapCellUnitLength = 64;
     BFGlobal.FoundationCellWidth = 20;
     BFGlobal.FoundationCellHeight = 10;
-    BFGlobal.LookAngle = Math.PI / 6;
+    BFGlobal.LookAngle = Math.PI / 9;
 }());
 /**
  * ------Javascript file onload callback End------
@@ -38,22 +38,28 @@ function BFMapClass()
 {
     this.CellList = new Array();
 
-    for (var x = 1; x < 11; ++x)
+    this.MapCanvas = document.createElement('canvas');
+    this.MapCanvas.width = 1280;
+    this.MapCanvas.height = 960;
+    var _context = this.MapCanvas.getContext('2d');
+    _context.scale(1, Math.sin(BFGlobal.LookAngle));
+
+    for (var x = 1; x < 21; ++x)
     {
-        for (var y = 1; y < 11; ++y)
+        for (var y = 1; y < 32; ++y)
         {
             var mapCell = new BFMapCellClass(x, y);
-            mapCell.SetImage('./Resource/Img/mapCell.jpg');
+            mapCell.SetImage('./Resource/Img/mapCell.png');
             this.CellList.push(mapCell);
         }
     }
 
-    this.Draw = function (context)
+    this.Draw = function ()
     {
         for (var i = 0; i < this.CellList.length; ++i)
         {
             this.CellList[i].Update();
-            this.CellList[i].Draw(context);
+            this.CellList[i].Draw(_context);
         }
     };
 }
@@ -77,10 +83,6 @@ function BFMapCellClass(xIndex, yIndex)
         this.SLocation.Y = 0;
         this.SSize.Width = BFGlobal.MapCellUnitLength;
         this.SSize.Height = BFGlobal.MapCellUnitLength;
-        this.DLocation.X = 0;
-        this.DLocation.Y = 0;
-        this.DSize.Width = BFGlobal.MapCellUnitLength;
-        this.DSize.Height = BFGlobal.MapCellUnitLength;
     };
 }
 
@@ -104,6 +106,11 @@ function ConvertMapIndex2Location(xIndex, yIndex)
         y = (yIndex - 1) * BFGlobal.MapCellUnitLength;
     }
     return new BFLocationClass(x, y);
+}
+
+function BFBuilding()
+{
+
 }
 
 function BFFoundationClass()
