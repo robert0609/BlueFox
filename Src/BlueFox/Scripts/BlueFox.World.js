@@ -120,9 +120,9 @@ function BFBuildingClass()
     this.Update = function ()
     {
         this.SLocation = new BFLocationClass(0, 0);
-        this.SSize = new BFSizeClass(30, 70);
+        this.SSize = new BFSizeClass(96, 128);
         this.CLocation = new BFLocationClass(0, 0);
-        this.CSize = new BFSizeClass(30, 70);
+        this.CSize = new BFSizeClass(96, 128);
         this.Foundation.BaseLocation = this.CLocation;
     };
 
@@ -130,7 +130,7 @@ function BFBuildingClass()
     this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
     this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
 
-    this.SetImage('../test.png');
+    this.SetImage('../tree.png');
 }
 
 function BFFoundationClass()

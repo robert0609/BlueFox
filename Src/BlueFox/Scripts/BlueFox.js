@@ -188,11 +188,13 @@ function BFApplicationClass()
     var _bufferContext = _bufferCanvas.getContext('2d');
 
     var map = new BFMapClass();
+    var building = new BFBuildingClass();
 
     var _draw = function ()
     {
         map.Draw();
         _bufferContext.drawImage(map.MapCanvas, 0, 0, map.MapCanvas.width, map.MapCanvas.height, 0, 0, map.MapCanvas.width, map.MapCanvas.height);
+        building.Draw(_bufferContext);
     };
 
     this.Run = function ()
