@@ -20,11 +20,12 @@
 (function ()
 {
     BFMapCellClass.prototype = new BFRenderClass(null);
+    BFBuildingClass.prototype = new BFRenderClass(null);
 
     BFGlobal.MapCellUnitLength = 64;
-    BFGlobal.FoundationCellWidth = 20;
+    BFGlobal.LookAngle = Math.PI / 6;
+    BFGlobal.FoundationCellWidth = 10;
     BFGlobal.FoundationCellHeight = 10;
-    BFGlobal.LookAngle = Math.PI / 9;
 }());
 /**
  * ------Javascript file onload callback End------
@@ -108,17 +109,48 @@ function ConvertMapIndex2Location(xIndex, yIndex)
     return new BFLocationClass(x, y);
 }
 
-function BFBuilding()
+/**
+ * 地图上的阻碍物(建筑等)
+ * @constructor
+ */
+function BFBuildingClass()
 {
+    this.Foundation = new BFFoundationClass();
 
+    this.Update = function ()
+    {
+        this.SLocation = new BFLocationClass(0, 0);
+        this.SSize = new BFSizeClass(30, 70);
+        this.CLocation = new BFLocationClass(0, 0);
+        this.CSize = new BFSizeClass(30, 70);
+        this.Foundation.BaseLocation = this.CLocation;
+    };
+
+    this.Foundation.AddCell(new BFFoundationCellClass(10, 50));
+    this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
+    this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
+
+    this.SetImage('../test.png');
 }
 
 function BFFoundationClass()
 {
+    this.BaseLocation = new BFLocationClass(0, 0);
+    this.CellList = new Array();
 
+    this.AddCell = function (foundationCell)
+    {
+        this.CellList.push(foundationCell);
+    };
+
+    this.CheckConflict = function ()
+    {
+
+    };
 }
 
-function BFFoundationCellClass()
+function BFFoundationCellClass(x, y)
 {
-
+    this.FLocation = new BFLocationClass(x, y);
+    this.FSize = new BFSizeClass(BFGlobal.FoundationCellWidth, BFGlobal.FoundationCellHeight);
 }
