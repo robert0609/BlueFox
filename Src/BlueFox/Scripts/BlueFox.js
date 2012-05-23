@@ -14,11 +14,6 @@
  */
 var BFResourceContainer = null;
 /**
- * 需要每帧刷新的对象列表
- * @type {BFRefreshListClass}
- */
-var BFRefreshList = null;
-/**
  * ------Global variant declare area End------
  */
 /**
@@ -30,7 +25,6 @@ var BFRefreshList = null;
 (function ()
 {
     BFResourceContainer = new BFResourceContainerClass();
-    BFRefreshList = new BFRefreshListClass();
 }());
 /**
  * ------Javascript file onload callback End------
@@ -167,14 +161,6 @@ function BFImage(imageFilePath)
 
     this._image.src = imageFilePath;
     this.ImageFilePath = imageFilePath;
-}
-
-/**
- * 需要每帧刷新的对象列表
- * @constructor
- */
-function BFRefreshListClass()
-{
 }
 
 function BFApplicationClass()

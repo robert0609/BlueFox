@@ -33,6 +33,19 @@
 
 function BFWorldClass()
 {
+    this.RenderList = new Array();
+
+    this._canvas = document.createElement('canvas');
+    this._canvas.width = 1280;
+    this._canvas.height = 960;
+    var _context = this._canvas.getContext('2d');
+
+    var _map = new BFMapClass();
+
+    this.Update = function ()
+    {
+
+    };
 }
 
 function BFMapClass()
@@ -43,7 +56,7 @@ function BFMapClass()
     this.MapCanvas.width = 1280;
     this.MapCanvas.height = 960;
     var _context = this.MapCanvas.getContext('2d');
-    //_context.scale(1, Math.sin(BFGlobal.LookAngle));
+    _context.scale(1, Math.sin(BFGlobal.LookAngle));
 
     for (var mapCellIdx = 0; mapCellIdx < TestMapData.MapCells.length; ++ mapCellIdx)
     {
