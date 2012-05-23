@@ -50,8 +50,6 @@ function BFRenderClass(imageFilePath)
     this.SLocation = new BFLocationClass(0, 0);
     this.SSize = new BFSizeClass(0, 0);
 
-    this.FoundationLocation = new BFLocationClass(0, 0);
-    this.FoundationSize = new BFSizeClass(0, 0);
     this.ZOrder = 0;
 
     if (imageFilePath == undefined || imageFilePath == null)
@@ -88,7 +86,7 @@ function BFRenderClass(imageFilePath)
     };
 
     /**
-     * 切换该绘图单元的图片
+     * 设置该绘图单元的图片
      * @param imageFilePath: string类型 图片文件相对路径
      * @constructor
      */
@@ -188,13 +186,11 @@ function BFApplicationClass()
     var _bufferContext = _bufferCanvas.getContext('2d');
 
     var map = new BFMapClass();
-    var building = new BFBuildingClass();
 
     var _draw = function ()
     {
         map.Draw();
         _bufferContext.drawImage(map.MapCanvas, 0, 0, map.MapCanvas.width, map.MapCanvas.height, 0, 0, map.MapCanvas.width, map.MapCanvas.height);
-        building.Draw(_bufferContext);
     };
 
     this.Run = function ()

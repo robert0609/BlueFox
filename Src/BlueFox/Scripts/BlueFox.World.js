@@ -43,16 +43,17 @@ function BFMapClass()
     this.MapCanvas.width = 1280;
     this.MapCanvas.height = 960;
     var _context = this.MapCanvas.getContext('2d');
-    _context.scale(1, Math.sin(BFGlobal.LookAngle));
+    //_context.scale(1, Math.sin(BFGlobal.LookAngle));
 
-    for (var x = 1; x < 21; ++x)
+    for (var mapCellIdx = 0; mapCellIdx < TestMapData.MapCells.length; ++ mapCellIdx)
     {
-        for (var y = 1; y < 32; ++y)
-        {
-            var mapCell = new BFMapCellClass(x, y);
-            mapCell.SetImage('./Resource/Img/mapCell.png');
-            this.CellList.push(mapCell);
-        }
+        var mapCell = new BFMapCellClass(TestMapData.MapCells[mapCellIdx]);
+        this.CellList.push(mapCell);
+    }
+    for (var buildingIdx = 0; buildingIdx < TestMapData.Buildings.length; ++ buildingIdx)
+    {
+        var building = new BFBuildingClass(TestMapData.Buildings[buildingIdx]);
+        this.CellList.push(building);
     }
 
     this.Draw = function ()
@@ -67,24 +68,21 @@ function BFMapClass()
 
 /**
  * 地图单元格
- * @param xIndex: 该单元格的x轴索引
- * @param yIndex: 该单元格的y轴索引
- * @param imageFilePath: 该单元格的加载图片
+ * @param mapCellEntity: 该单元格的数据实体
  * @constructor
  */
-function BFMapCellClass(xIndex, yIndex)
+function BFMapCellClass(mapCellEntity)
 {
-    this.CLocation = ConvertMapIndex2Location(xIndex, yIndex);
-    this.CSize.Width = BFGlobal.MapCellUnitLength;
-    this.CSize.Height = BFGlobal.MapCellUnitLength;
-
     this.Update = function ()
     {
-        this.SLocation.X = 0;
-        this.SLocation.Y = 0;
-        this.SSize.Width = BFGlobal.MapCellUnitLength;
-        this.SSize.Height = BFGlobal.MapCellUnitLength;
+        this.SLocation = new BFLocationClass(mapCellEntity.SX, mapCellEntity.SY);
+        this.SSize = new BFSizeClass(BFGlobal.MapCellUnitLength, BFGlobal.MapCellUnitLength);
+        this.CLocation = ConvertMapIndex2Location(mapCellEntity.XIndex, mapCellEntity.YIndex);
+        this.CSize = new BFSizeClass(BFGlobal.MapCellUnitLength, BFGlobal.MapCellUnitLength);
+        this.ZOrder = mapCellEntity.ZOrder;
     };
+
+    this.SetImage(mapCellEntity.ImageFilePath);
 }
 
 /**
@@ -111,18 +109,20 @@ function ConvertMapIndex2Location(xIndex, yIndex)
 
 /**
  * 地图上的阻碍物(建筑等)
+ * @param buildingEntity: 阻碍物的数据实体
  * @constructor
  */
-function BFBuildingClass()
+function BFBuildingClass(buildingEntity)
 {
     this.Foundation = new BFFoundationClass();
 
     this.Update = function ()
     {
-        this.SLocation = new BFLocationClass(0, 0);
-        this.SSize = new BFSizeClass(96, 128);
-        this.CLocation = new BFLocationClass(0, 0);
-        this.CSize = new BFSizeClass(96, 128);
+        this.SLocation = new BFLocationClass(buildingEntity.SX, buildingEntity.SY);
+        this.SSize = new BFSizeClass(buildingEntity.SWidth, buildingEntity.SHeight);
+        this.CLocation = new BFLocationClass(buildingEntity.CX, buildingEntity.CY);
+        this.CSize = new BFSizeClass(buildingEntity.CWidth, buildingEntity.CHeight);
+        this.ZOrder = buildingEntity.ZOrder;
         this.Foundation.BaseLocation = this.CLocation;
     };
 
@@ -130,7 +130,7 @@ function BFBuildingClass()
     this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
     this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
 
-    this.SetImage('../tree.png');
+    this.SetImage(buildingEntity.ImageFilePath);
 }
 
 function BFFoundationClass()
