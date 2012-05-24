@@ -24,8 +24,8 @@
 
     BFGlobal.MapCellUnitLength = 64;
     BFGlobal.LookAngle = Math.PI / 6;
-    BFGlobal.FoundationCellWidth = 10;
-    BFGlobal.FoundationCellHeight = 10;
+    BFGlobal.FoundationCellWidth = 16;
+    BFGlobal.FoundationCellHeight = 16;
 }());
 /**
  * ------Javascript file onload callback End------
@@ -166,4 +166,12 @@ function BFFoundationCellClass(x, y)
 {
     this.FLocation = new BFLocationClass(x, y);
     this.FSize = new BFSizeClass(BFGlobal.FoundationCellWidth, BFGlobal.FoundationCellHeight);
+}
+
+function BFImageLayerClass()
+{
+    this.LookAngle = Math.PI / 2;
+    this.Width = 64;
+    this.Height = 64;
+    this.Foundation = new BFFoundationClass();
 }
