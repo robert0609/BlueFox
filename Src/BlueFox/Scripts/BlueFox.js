@@ -395,6 +395,12 @@ var BlueFox = (function (self)
         };
     }
 
+    /**
+     * 图层类
+     * @param w
+     * @param h
+     * @constructor
+     */
     function BFLayerClass(w, h)
     {
         // 该图层是否定时刷新。True:需要;False:不需要
@@ -450,6 +456,12 @@ var BlueFox = (function (self)
         };
     }
 
+    /**
+     * 最外城Canvas类，包含若干图层
+     * @param w
+     * @param h
+     * @constructor
+     */
     function BFCanvasClass(w, h)
     {
         this.LayerList = new Array();
@@ -458,7 +470,7 @@ var BlueFox = (function (self)
         _bufferCanvas.width = w;
         _bufferCanvas.height = h;
         document.body.appendChild(_bufferCanvas);
-        AddEventHandler(_bufferCanvas, 'click', MouseClick, false);
+        AddEventHandler(_bufferCanvas, 'click', MouseClickEvent, false);
         var _bufferContext = _bufferCanvas.getContext('2d');
 
         this.Draw = function ()
@@ -481,7 +493,7 @@ var BlueFox = (function (self)
     /* BlueFox End */
 
     /* BlueFox.World Begin */
-    function MouseClick(e)
+    function MouseClickEvent(e)
     {
         var clickX = e.pageX;
         var clickY = e.pageY;
@@ -618,10 +630,12 @@ var BlueFox = (function (self)
                     this.DirectionX = 0;
                 }
                 this.CLocation.Y += this.DirectionY * this.Speed;
+                this.ZOrder = this.CLocation.Y;
                 by = this.CheckExceedY();
                 if (by)
                 {
                     this.CLocation.Y = ty;
+                    this.ZOrder = this.CLocation.Y;
                     this.DirectionY = 0;
                 }
 
@@ -683,18 +697,40 @@ var BlueFox = (function (self)
         render.CSize.Width = renderEntity.CWidth;
         render.CSize.Height = renderEntity.CHeight;
         render.ZOrder = renderEntity.ZOrder;
+
         render.Update = function ()
         {
-//            this.SLocation.X = renderEntity.SX;
-//            this.SLocation.Y = renderEntity.SY;
-//            this.SSize.Width = renderEntity.SWidth;
-//            this.SSize.Height = renderEntity.SHeight;
-//            this.CLocation.X = renderEntity.CX;
-//            this.CLocation.Y = renderEntity.CY;
-//            this.CSize.Width = renderEntity.CWidth;
-//            this.CSize.Height = renderEntity.CHeight;
-//            this.ZOrder = renderEntity.ZOrder;
+            if (this.Speed == 0)
+            {
+                return;
+            }
+            var bx = false;
+            var by = false;
+            var tx = this.TargetX();
+            var ty = this.TargetY();
+            this.CLocation.X += this.DirectionX * this.Speed;
+            bx = this.CheckExceedX();
+            if (bx)
+            {
+                this.CLocation.X = tx;
+                this.DirectionX = 0;
+            }
+            this.CLocation.Y += this.DirectionY * this.Speed;
+            this.ZOrder = this.CLocation.Y;
+            by = this.CheckExceedY();
+            if (by)
+            {
+                this.CLocation.Y = ty;
+                this.ZOrder = this.CLocation.Y;
+                this.DirectionY = 0;
+            }
+
+            if (bx && by)
+            {
+                this.Speed = 0;
+            }
         };
+
         return render;
     };
     /* BlueFox.World End */
@@ -724,7 +760,7 @@ var BlueFox = (function (self)
             }
             for (var buildingIdx = 0; buildingIdx < TestMapData.Buildings.length; ++ buildingIdx)
             {
-                var building = self.CreateBFBuilding(TestMapData.Buildings[buildingIdx]);
+                var building = self.CreateBFRender(TestMapData.Buildings[buildingIdx]);
                 layer2.RenderList.push(building);
             }
 
