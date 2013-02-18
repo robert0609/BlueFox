@@ -5,17 +5,22 @@
  * Time: 下午2:13
  * To change this template use File | Settings | File Templates.
  */
-$(
-    function ()
+
+function Load()
+{
+    try
     {
-        try
-        {
-            var app = new BFApplicationClass();
-            app.Run();
-        }
-        catch (ex)
-        {
-            alert(ex);
-        }
+        BlueFox.Run();
+//        var ele = document.getElementById('aa');
+//        AddEventHandler(ele, 'click', function (e)
+//        {
+//            alert(e);
+//        }, false);
     }
-);
+    catch (ex)
+    {
+        alert(ex);
+    }
+}
+
+
