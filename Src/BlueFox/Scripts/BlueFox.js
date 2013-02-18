@@ -1,6 +1,6 @@
 /**
  * Created with JetBrains WebStorm.
- * User: yangxu(Role:admin)
+ * User: yangxu
  * Date: 12-5-5
  * Time: 下午6:21
  * To change this template use File | Settings | File Templates.
@@ -497,6 +497,7 @@ var BlueFox = (function (self)
     {
         var clickX = e.pageX;
         var clickY = e.pageY;
+        debugger;
         var element = FindClickElement(clickX, clickY, self.WholeCanvas.LayerList[1]);
         if (element != null)
         {
