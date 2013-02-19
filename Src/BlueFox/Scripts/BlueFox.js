@@ -457,7 +457,7 @@ var BlueFox = (function (self)
     }
 
     /**
-     * 最外城Canvas类，包含若干图层
+     * 最外层Canvas类，包含若干图层
      * @param w
      * @param h
      * @constructor
@@ -472,9 +472,20 @@ var BlueFox = (function (self)
         document.body.appendChild(_bufferCanvas);
         AddEventHandler(_bufferCanvas, 'click', MouseClickEvent, false);
         var _bufferContext = _bufferCanvas.getContext('2d');
+        _bufferContext.fillStyle = 'red';
+        _bufferContext.font = '20px Lucida Console';
 
+        var txt = document.getElementById('frameCount');
+
+        /**
+         * 重绘处理
+         * @method
+         */
         this.Draw = function ()
         {
+            // 获取当前时刻
+            var dt1 = (new Date()).getTime();
+
             this.LayerList = this.LayerList.sort(function (a, b)
             {
                 return a.Index - b.Index;
@@ -488,17 +499,58 @@ var BlueFox = (function (self)
                 layerCanvas = layer.LayerCanvas();
                 _bufferContext.drawImage(layerCanvas, 0, 0, layerCanvas.width, layerCanvas.height, 0, 0, w, h);
             }
+
+            // 获取当前时刻
+            var dt2 = (new Date()).getTime();
+
+            var span = dt2 - dt1;
+            txt.value = span / 1000;
+
+            DisplayFPS(dt2);
+        };
+
+        function DisplayFPS(dt)
+        {
+            if (self.CurrentTime > 0)
+            {
+                var interval = dt - self.CurrentTime;
+                var frameCnt = 1000 / interval;
+                if (frameCnt < self.FPS)
+                {
+                    frameCnt = Math.floor(frameCnt);
+                }
+                else
+                {
+                    frameCnt = self.FPS;
+                }
+                _bufferContext.fillText(String(frameCnt), 2, 20);
+            }
+            self.CurrentTime = dt;
+        }
+
+        this.LocationX = function ()
+        {
+            return _bufferCanvas.offsetLeft;
+        };
+
+        this.LocationY = function ()
+        {
+            return _bufferCanvas.offsetTop;
         };
     }
     /* BlueFox End */
 
     /* BlueFox.World Begin */
+    /**
+     * 鼠标单击事件
+     * @param e
+     * @event
+     */
     function MouseClickEvent(e)
     {
-        var clickX = e.pageX;
-        var clickY = e.pageY;
-        debugger;
-        var element = FindClickElement(clickX, clickY, self.WholeCanvas.LayerList[1]);
+        var clickX = e.pageX - self.GlobalCanvas.LocationX();
+        var clickY = e.pageY - self.GlobalCanvas.LocationY();
+        var element = FindClickElement(clickX, clickY, self.GlobalCanvas.LayerList[1]);
         if (element != null)
         {
             if (self.SelectRender != null)
@@ -736,14 +788,16 @@ var BlueFox = (function (self)
     };
     /* BlueFox.World End */
 
-    self.WholeCanvas = null;
+    self.GlobalCanvas = null;
     self.SelectRender = null;
+    // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
+    self.CurrentTime = 0;
     self.Run = function ()
     {
         try
         {
             var BFCanvas = new BFCanvasClass(1280, 960);
-            self.WholeCanvas = BFCanvas;
+            self.GlobalCanvas = BFCanvas;
             var layer1 = new BFLayerClass(1280, 960);
             layer1.Index = 0;
             layer1.AutoStopRefresh = true;
