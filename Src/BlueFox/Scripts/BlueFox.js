@@ -475,8 +475,6 @@ var BlueFox = (function (self)
         _bufferContext.fillStyle = 'red';
         _bufferContext.font = '20px Lucida Console';
 
-        var txt = document.getElementById('frameCount');
-
         /**
          * 重绘处理
          * @method
@@ -503,17 +501,18 @@ var BlueFox = (function (self)
             // 获取当前时刻
             var dt2 = (new Date()).getTime();
 
-            var span = dt2 - dt1;
-            txt.value = span / 1000;
-
-            DisplayFPS(dt2);
+            DisplayFPS(dt1, dt2);
         };
 
-        function DisplayFPS(dt)
+        function DisplayFPS(dt1, dt2)
         {
+            var str = 'TPP:';
+            var tpp = (dt2 - dt1) / 1000;
+            str += String(tpp);
+            str += ';'
             if (self.CurrentTime > 0)
             {
-                var interval = dt - self.CurrentTime;
+                var interval = dt2 - self.CurrentTime;
                 var frameCnt = 1000 / interval;
                 if (frameCnt < self.FPS)
                 {
@@ -523,9 +522,11 @@ var BlueFox = (function (self)
                 {
                     frameCnt = self.FPS;
                 }
-                _bufferContext.fillText(String(frameCnt), 2, 20);
+                str += 'FPS:';
+                str += String(frameCnt);
             }
-            self.CurrentTime = dt;
+            _bufferContext.fillText(str, 2, 20);
+            self.CurrentTime = dt2;
         }
 
         this.LocationX = function ()
