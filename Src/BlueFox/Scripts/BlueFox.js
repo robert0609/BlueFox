@@ -791,39 +791,27 @@ var BlueFox = (function (self)
 
         return render;
     };
+
+    self.CreateBFLayer = function (w, h)
+    {
+        return new BFLayerClass(w, h);
+    };
+
+    self.CreateBFCanvas = function (w, h)
+    {
+        self.GlobalCanvas = new BFCanvasClass(w, h);
+    };
     /* BlueFox.World End */
 
     self.SelectRender = null;
     // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
     self.CurrentTime = 0;
+
     self.Run = function ()
     {
         try
         {
-            var BFCanvas = new BFCanvasClass(1280, 960);
-            self.GlobalCanvas = BFCanvas;
-            var layer1 = new BFLayerClass(1280, 960);
-            layer1.Index = 0;
-            layer1.AutoStopRefresh = true;
-            var layer2 = new BFLayerClass(1280, 960);
-            layer2.Index = 1;
-            layer2.StrokeStyle('orange');
-            BFCanvas.LayerList.push(layer2);
-            BFCanvas.LayerList.push(layer1);
-
-            layer1.Scale(self.LookAngle);
-            for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
-            {
-                var mapCell = self.CreateBFMapCell(mapList[mapCellIdx]);
-                layer1.RenderList.push(mapCell);
-            }
-            for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
-            {
-                var building = self.CreateBFRender(buildingList[buildingIdx]);
-                layer2.RenderList.push(building);
-            }
-
-            window.setInterval(function (){ BFCanvas.Draw(); }, self.Interval);
+            window.setInterval(function (){ self.GlobalCanvas.Draw(); }, self.Interval);
         }
         catch (ex)
         {

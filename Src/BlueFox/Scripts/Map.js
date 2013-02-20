@@ -14,13 +14,34 @@ function Load()
         for (var i = 0; i < resourceList.length; ++i)
         {
             var res = resourceList[i];
-            self.BFResourceContainer.SetImage(res.ResourceId, res.ImageFilePath);
+            BlueFox.BFResourceContainer.SetImage(res.ResourceId, res.ImageFilePath);
         }
 
         var mapList = GetMapList();
         var buildingList = GetBuildingList();
 
+        BlueFox.CreateBFCanvas(1280, 960);
+        var BFCanvas = BlueFox.GlobalCanvas;
+        var layer1 = BlueFox.CreateBFLayer(1280, 960);
+        layer1.Index = 0;
+        //layer1.AutoStopRefresh = true;
+        var layer2 = BlueFox.CreateBFLayer(1280, 960);
+        layer2.Index = 1;
+        layer2.StrokeStyle('orange');
+        BFCanvas.LayerList.push(layer2);
+        BFCanvas.LayerList.push(layer1);
 
+        layer1.Scale(BlueFox.LookAngle);
+        for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
+        {
+            var mapCell = BlueFox.CreateBFMapCell(mapList[mapCellIdx]);
+            layer1.RenderList.push(mapCell);
+        }
+        for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
+        {
+            var building = BlueFox.CreateBFRender(buildingList[buildingIdx]);
+            layer2.RenderList.push(building);
+        }
 
         BlueFox.Run();
     }
