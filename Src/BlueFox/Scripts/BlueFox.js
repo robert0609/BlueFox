@@ -12,9 +12,7 @@ var BlueFox = (function (self)
      * 所有资源的容器
      * @type {BFResourceContainerClass}
      */
-    var BFResourceContainer = new BFResourceContainerClass();
-    BFResourceContainer.GetImage('./Resource/Img/mapCell.png');
-    BFResourceContainer.GetImage('./Resource/Img/tree.png');
+    self.BFResourceContainer = new BFResourceContainerClass();
     // 每秒帧数
     self.FPS = 30;
     // 每帧间隔时间，毫秒
@@ -23,6 +21,8 @@ var BlueFox = (function (self)
     self.LookAngle = Math.PI / 6;
     self.FoundationCellWidth = 16;
     self.FoundationCellHeight = 16;
+    // 全局画布
+    self.GlobalCanvas = null;
 
     /* BlueFox.Common Begin */
     /**
@@ -127,10 +127,9 @@ var BlueFox = (function (self)
     /* BlueFox Begin */
     /**
      * 基本绘图单元
-     * @param imageFilePath: string类型 图片文件相对路径
      * @constructor
      */
-    function BFRenderClass(imageFilePath)
+    function BFRenderClass()
     {
         this.CLocation = new BFLocationClass(0, 0);
         this.CSize = new BFSizeClass(0, 0);
@@ -151,15 +150,8 @@ var BlueFox = (function (self)
         // 元素在每帧移动的像素数
         this.Speed = 0;
 
-        var _image = null;
-        if (imageFilePath == undefined || imageFilePath == null)
-        {
-            _image = BFResourceContainer.GetImage('');
-        }
-        else
-        {
-            _image = BFResourceContainer.GetImage(imageFilePath);
-        }
+        // 默认的资源图片
+        var _image = self.BFResourceContainer.GetImage('default');;
 
         /**
          * 每帧都会调用Draw方法绘制
@@ -191,25 +183,21 @@ var BlueFox = (function (self)
 
         /**
          * 设置该绘图单元的图片
-         * @param imageFilePath: string类型 图片文件相对路径
+         * @param resourceId: string类型 图片资源ID
          * @method
          */
-        this.SetImage = function (imageFilePath)
+        this.SetImage = function (resourceId)
         {
-            var filePath;
-            if (imageFilePath == undefined || imageFilePath == null)
+            var id;
+            if (resourceId == undefined || resourceId == null)
             {
-                filePath = '';
+                id = 'default';
             }
             else
             {
-                filePath = imageFilePath;
+                id = resourceId;
             }
-            if (_image.ImageFilePath == filePath)
-            {
-                return;
-            }
-            _image = BFResourceContainer.GetImage(filePath);
+            _image = self.BFResourceContainer.GetImage(id);
         };
 
         /**
@@ -340,19 +328,34 @@ var BlueFox = (function (self)
     function BFResourceContainerClass()
     {
         var _imageDic = new BFDictionaryClass();
+        AddDefaultResource();
 
-        this.GetImage = function (imageFilePath)
+        function AddDefaultResource()
         {
-            if (_imageDic.ContainsKey(imageFilePath))
+            var img = new BFImageClass('');
+            _imageDic.Add('default', img);
+        }
+
+        this.GetImage = function (resourceId)
+        {
+            if (_imageDic.ContainsKey(resourceId))
             {
-                return _imageDic.Get(imageFilePath);
+                return _imageDic.Get(resourceId);
             }
             else
             {
-                var img = new BFImageClass(imageFilePath);
-                _imageDic.Add(imageFilePath, img);
-                return img;
+                throw '获取图片失败！资源容器中不存在ID为' + String(resourceId) + '的图片。';
             }
+        };
+
+        this.SetImage = function (resourceId, imageFilePath)
+        {
+            if (_imageDic.ContainsKey(resourceId))
+            {
+                throw '缓存图片失败！资源容器中已存在ID为' + String(resourceId) + '的图片。';
+            }
+            var img = new BFImageClass(imageFilePath);
+            _imageDic.Add(resourceId, img);
         };
     }
 
@@ -594,7 +597,7 @@ var BlueFox = (function (self)
     self.CreateBFMapCell = function (mapCellEntity)
     {
         //继承基本绘图单元
-        BFMapCellClass.prototype = new BFRenderClass(null);
+        BFMapCellClass.prototype = new BFRenderClass();
 
         /**
          * 地图单元格
@@ -616,7 +619,7 @@ var BlueFox = (function (self)
             {
             };
 
-            this.SetImage(mapCellEntity.ImageFilePath);
+            this.SetImage(mapCellEntity.ResourceId);
         }
 
         /**
@@ -647,7 +650,7 @@ var BlueFox = (function (self)
     self.CreateBFBuilding = function (buildingEntity)
     {
         //继承基本绘图单元
-        BFBuildingClass.prototype = new BFRenderClass(null);
+        BFBuildingClass.prototype = new BFRenderClass();
 
         /**
          * 地图上的阻碍物(建筑等)
@@ -705,7 +708,7 @@ var BlueFox = (function (self)
             this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
             this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
 
-            this.SetImage(buildingEntity.ImageFilePath);
+            this.SetImage(buildingEntity.ResourceId);
         }
 
         function BFFoundationClass()
@@ -741,7 +744,8 @@ var BlueFox = (function (self)
      */
     self.CreateBFRender = function (renderEntity)
     {
-        var render = new BFRenderClass(renderEntity.ImageFilePath);
+        var render = new BFRenderClass();
+        render.SetImage(renderEntity.ResourceId);
         render.SLocation.X = renderEntity.SX;
         render.SLocation.Y = renderEntity.SY;
         render.SSize.Width = renderEntity.SWidth;
@@ -789,7 +793,6 @@ var BlueFox = (function (self)
     };
     /* BlueFox.World End */
 
-    self.GlobalCanvas = null;
     self.SelectRender = null;
     // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
     self.CurrentTime = 0;
@@ -809,14 +812,14 @@ var BlueFox = (function (self)
             BFCanvas.LayerList.push(layer1);
 
             layer1.Scale(self.LookAngle);
-            for (var mapCellIdx = 0; mapCellIdx < TestMapData.MapCells.length; ++mapCellIdx)
+            for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
             {
-                var mapCell = self.CreateBFMapCell(TestMapData.MapCells[mapCellIdx]);
+                var mapCell = self.CreateBFMapCell(mapList[mapCellIdx]);
                 layer1.RenderList.push(mapCell);
             }
-            for (var buildingIdx = 0; buildingIdx < TestMapData.Buildings.length; ++ buildingIdx)
+            for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
             {
-                var building = self.CreateBFRender(TestMapData.Buildings[buildingIdx]);
+                var building = self.CreateBFRender(buildingList[buildingIdx]);
                 layer2.RenderList.push(building);
             }
 

@@ -10,12 +10,19 @@ function Load()
 {
     try
     {
+        var resourceList = GetResourceList();
+        for (var i = 0; i < resourceList.length; ++i)
+        {
+            var res = resourceList[i];
+            self.BFResourceContainer.SetImage(res.ResourceId, res.ImageFilePath);
+        }
+
+        var mapList = GetMapList();
+        var buildingList = GetBuildingList();
+
+
+
         BlueFox.Run();
-//        var ele = document.getElementById('aa');
-//        AddEventHandler(ele, 'click', function (e)
-//        {
-//            alert(e);
-//        }, false);
     }
     catch (ex)
     {
