@@ -22,7 +22,7 @@ var BlueFox = (function (self)
     self.FoundationCellWidth = 16;
     self.FoundationCellHeight = 16;
     // 全局画布
-    self.GlobalCanvas = null;
+    self.GlobalBFCanvas = null;
 
     /* BlueFox.Common Begin */
     /**
@@ -472,7 +472,7 @@ var BlueFox = (function (self)
         var _bufferCanvas = document.createElement('canvas');
         _bufferCanvas.width = w;
         _bufferCanvas.height = h;
-        document.body.appendChild(_bufferCanvas);
+        _bufferCanvas.innerText = 'Sorry! The Web browser you\'re using doesn\'t support HTML5. Please try Chrome or Firefox.';
         AddEventHandler(_bufferCanvas, 'click', MouseClickEvent, false);
         var _bufferContext = _bufferCanvas.getContext('2d');
         _bufferContext.fillStyle = 'red';
@@ -541,6 +541,11 @@ var BlueFox = (function (self)
         {
             return _bufferCanvas.offsetTop;
         };
+
+        this.BufferCanvas = function ()
+        {
+            return _bufferCanvas;
+        };
     }
     /* BlueFox End */
 
@@ -552,9 +557,9 @@ var BlueFox = (function (self)
      */
     function MouseClickEvent(e)
     {
-        var clickX = e.pageX - self.GlobalCanvas.LocationX();
-        var clickY = e.pageY - self.GlobalCanvas.LocationY();
-        var element = FindClickElement(clickX, clickY, self.GlobalCanvas.LayerList[1]);
+        var clickX = e.pageX - self.GlobalBFCanvas.LocationX();
+        var clickY = e.pageY - self.GlobalBFCanvas.LocationY();
+        var element = FindClickElement(clickX, clickY, self.GlobalBFCanvas.LayerList[1]);
         if (element != null)
         {
             if (self.SelectRender != null)
@@ -799,7 +804,8 @@ var BlueFox = (function (self)
 
     self.CreateBFCanvas = function (w, h)
     {
-        self.GlobalCanvas = new BFCanvasClass(w, h);
+        self.GlobalBFCanvas = new BFCanvasClass(w, h);
+        return self.GlobalBFCanvas;
     };
     /* BlueFox.World End */
 
@@ -811,7 +817,7 @@ var BlueFox = (function (self)
     {
         try
         {
-            window.setInterval(function (){ self.GlobalCanvas.Draw(); }, self.Interval);
+            window.setInterval(function (){ self.GlobalBFCanvas.Draw(); }, self.Interval);
         }
         catch (ex)
         {

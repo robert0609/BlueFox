@@ -11,12 +11,17 @@
 
         function Load()
         {
-            var ctx = document.getElementById('can').getContext('2d');
-            ctx.strokeStyle = 'orange';
-            ctx.fillStyle = 'red';
-            ctx.font = '20px Lucida Console';
-            ctx.strokeRect(0, 0, 500, 400);
-            ctx.fillText('test', 100, 100);
+//            var ctx = document.getElementById('can').getContext('2d');
+//            ctx.strokeStyle = 'orange';
+//            ctx.fillStyle = 'red';
+//            ctx.font = '20px Lucida Console';
+//            ctx.strokeRect(0, 0, 500, 400);
+//            ctx.fillText('test', 100, 100);
+            var canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 400;
+            canvas.innerText = 'Sorry! The Web browser you\'re using doesn\'t support HTML5. Please try Chrome or Firefox.';
+            document.body.appendChild(canvas);
         }
     </script>
 </head>
@@ -25,8 +30,8 @@
 <input type="text" name="txt1" value="这是标题" onclick="getValue()" />
 <!--<h1 name="txt1" onclick="getValue()">这是标题</h1>-->
 <p>点击标题，会提示出它的值。</p>
-
-<canvas id="can" width="500" height="400"></canvas>
+<script type="text/javascript">
+</script>
 
 </body>
 </html>

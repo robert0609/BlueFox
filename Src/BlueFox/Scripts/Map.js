@@ -20,11 +20,11 @@ function Load()
         var mapList = GetMapList();
         var buildingList = GetBuildingList();
 
-        BlueFox.CreateBFCanvas(1280, 960);
-        var BFCanvas = BlueFox.GlobalCanvas;
+        var BFCanvas = BlueFox.CreateBFCanvas(1280, 960);;
+
         var layer1 = BlueFox.CreateBFLayer(1280, 960);
         layer1.Index = 0;
-        //layer1.AutoStopRefresh = true;
+        layer1.AutoStopRefresh = true;
         var layer2 = BlueFox.CreateBFLayer(1280, 960);
         layer2.Index = 1;
         layer2.StrokeStyle('orange');
@@ -43,6 +43,7 @@ function Load()
             layer2.RenderList.push(building);
         }
 
+        document.body.appendChild(BFCanvas.BufferCanvas());
         BlueFox.Run();
     }
     catch (ex)
