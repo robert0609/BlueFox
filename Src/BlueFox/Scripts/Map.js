@@ -20,7 +20,7 @@ function Load()
         var mapList = GetMapList();
         var buildingList = GetBuildingList();
 
-        var BFCanvas = BlueFox.CreateBFCanvas(1280, 960);;
+        var BFCanvas = BlueFox.CreateBFCanvas(1280, 960);
 
         var layer1 = BlueFox.CreateBFLayer(1280, 960);
         layer1.Index = 0;

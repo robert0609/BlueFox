@@ -24,6 +24,10 @@ var BlueFox = (function (self)
     // 全局画布
     self.GlobalBFCanvas = null;
 
+    self.SelectRender = null;
+    // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
+    self.CurrentTime = 0;
+
     /* BlueFox.Common Begin */
     /**
      * 位置类
@@ -808,10 +812,6 @@ var BlueFox = (function (self)
         return self.GlobalBFCanvas;
     };
     /* BlueFox.World End */
-
-    self.SelectRender = null;
-    // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
-    self.CurrentTime = 0;
 
     self.Run = function ()
     {
