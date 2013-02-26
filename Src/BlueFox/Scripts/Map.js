@@ -39,7 +39,7 @@ function Load()
         }
         for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
         {
-            var building = BlueFox.CreateBFRender(buildingList[buildingIdx]);
+            var building = BlueFox.CreateBFMovableRender(buildingList[buildingIdx]);
             layer2.RenderList.push(building);
         }
 
