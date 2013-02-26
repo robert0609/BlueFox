@@ -247,9 +247,9 @@ var BlueFox = (function (self)
 
         /**
          * 每帧都会调用Update方法更新该绘图单元的位置及尺寸
-         * @method
+         * @Event
          */
-        this.Update = function ()
+        this.OnUpdate = function ()
         {
             this.SLocation = new BFLocationClass(0, 0);
             this.SSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
@@ -322,7 +322,7 @@ var BlueFox = (function (self)
                 for (var i = 0; i < this.RenderList.length; ++i)
                 {
                     render = this.RenderList[i];
-                    render.Update();
+                    render.OnUpdate();
                     render.Draw(_context);
                 }
                 if (this.AutoStopRefresh)
@@ -517,7 +517,7 @@ var BlueFox = (function (self)
             this.CSize.Height = self.MapCellUnitLength;
             this.ZOrder = mapCellEntity.ZOrder;
 
-            this.Update = function ()
+            this.OnUpdate = function ()
             {
             };
 
@@ -571,7 +571,7 @@ var BlueFox = (function (self)
             this.CSize.Height = buildingEntity.CHeight;
             this.ZOrder = buildingEntity.ZOrder;
 
-            this.Update = function ()
+            this.OnUpdate = function ()
             {
             };
 
@@ -792,7 +792,7 @@ var BlueFox = (function (self)
                 return _targetY;
             };
 
-            this.Update = function ()
+            this.OnUpdate = function ()
             {
                 if (this.Speed == 0)
                 {
