@@ -146,6 +146,8 @@ var BlueFox = (function (self)
         {
             var img = new BFImageClass('');
             _imageDic.Add('default', img);
+//            var img1 = new BFImageClass('./Resource/Img/loading.gif');
+//            _imageDic.Add('loading', img1);
         }
 
         this.GetImage = function (resourceId)
