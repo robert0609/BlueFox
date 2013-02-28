@@ -8,6 +8,8 @@
 
 var BlueFox = (function (self)
 {
+    var ConstLoadingHtml = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /><p style="margin-top: 0px; margin-bottom: 0px; font-family: Lucida Console; font-size: 10px; font-weight: bold;">test</p></td></tr></table>';
+
     try
     {
         /**
@@ -146,8 +148,6 @@ var BlueFox = (function (self)
         {
             var img = new BFImageClass('');
             _imageDic.Add('default', img);
-//            var img1 = new BFImageClass('./Resource/Img/loading.gif');
-//            _imageDic.Add('loading', img1);
         }
 
         this.GetImage = function (resourceId)
@@ -847,11 +847,17 @@ var BlueFox = (function (self)
     {
         try
         {
-            window.setInterval(function (){ self.GlobalBFCanvas.Draw(); }, self.Interval);
+            window.setInterval(Refresh, self.Interval);
         }
         catch (ex)
         {
             alert(ex);
+        }
+
+        function Refresh()
+        {
+            document.body.innerHTML = ConstLoadingHtml;
+            //self.GlobalBFCanvas.Draw();
         }
     };
 

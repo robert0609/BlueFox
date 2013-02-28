@@ -20,12 +20,15 @@ function Load()
         var mapList = GetMapList();
         var buildingList = GetBuildingList();
 
-        var BFCanvas = BlueFox.CreateBFCanvas(1280, 960);
+        var bodyWidth = document.body.clientWidth;
+        var bodyHeight = document.body.clientHeight;
 
-        var layer1 = BlueFox.CreateBFLayer(1280, 960);
+        var BFCanvas = BlueFox.CreateBFCanvas(bodyWidth, bodyHeight);
+
+        var layer1 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
-        var layer2 = BlueFox.CreateBFLayer(1280, 960);
+        var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer2.Index = 1;
         layer2.StrokeStyle('orange');
         BFCanvas.LayerList.push(layer2);
@@ -43,7 +46,7 @@ function Load()
             layer2.RenderList.push(building);
         }
 
-        document.body.appendChild(BFCanvas.BufferCanvas());
+        //document.body.appendChild(BFCanvas.BufferCanvas());
         BlueFox.Run();
     }
     catch (ex)
