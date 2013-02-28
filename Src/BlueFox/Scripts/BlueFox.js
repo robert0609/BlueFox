@@ -856,8 +856,8 @@ var BlueFox = (function (self)
 
         function Refresh()
         {
-            document.body.innerHTML = ConstLoadingHtml;
-            //self.GlobalBFCanvas.Draw();
+            //document.body.innerHTML = ConstLoadingHtml;
+            self.GlobalBFCanvas.Draw();
         }
     };
 

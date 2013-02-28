@@ -46,7 +46,7 @@ function Load()
             layer2.RenderList.push(building);
         }
 
-        //document.body.appendChild(BFCanvas.BufferCanvas());
+        document.body.appendChild(BFCanvas.BufferCanvas());
         BlueFox.Run();
     }
     catch (ex)
