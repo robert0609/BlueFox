@@ -8,7 +8,7 @@
 
 var BlueFox = (function (self)
 {
-    var ConstLoadingHtml = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /><p style="margin-top: 0px; margin-bottom: 0px; font-family: Lucida Console; font-size: 10px; font-weight: bold;">test</p></td></tr></table>';
+    var ConstLoadingHtml = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /></td></tr></table>';
 
     try
     {
@@ -133,6 +133,11 @@ var BlueFox = (function (self)
                 return true;
             }
         };
+
+        this.ToList = function ()
+        {
+            return _innerList;
+        };
     }
 
     /**
@@ -142,6 +147,8 @@ var BlueFox = (function (self)
     function BFResourceContainerClass()
     {
         var _imageDic = new BFDictionaryClass();
+        var _resourceLoaded = false;
+
         AddDefaultResource();
 
         function AddDefaultResource()
@@ -171,6 +178,26 @@ var BlueFox = (function (self)
             var img = new BFImageClass(imageFilePath);
             _imageDic.Add(resourceId, img);
         };
+
+        this.GetResourceLoaded = function ()
+        {
+            if (_resourceLoaded)
+            {
+                return _resourceLoaded;
+            }
+            var ret = true;
+            var list = _imageDic.ToList();
+            for (var i = 0; i < list.length; ++i)
+            {
+                if (!list[i].Value.GetImageLoaded())
+                {
+                    ret = false;
+                    break;
+                }
+            }
+            _resourceLoaded = ret;
+            return _resourceLoaded;
+        };
     }
 
     /**
@@ -196,6 +223,10 @@ var BlueFox = (function (self)
         var _context = _imageCanvas.getContext('2d');
 
         var _imageLoaded = false;
+        if (imageFilePath == undefined || imageFilePath == null || imageFilePath == '')
+        {
+            _imageLoaded = true;
+        }
 
         _image.src = imageFilePath;
 
@@ -854,10 +885,29 @@ var BlueFox = (function (self)
             alert(ex);
         }
 
+        var loadingHtmlDisplay = false;
+        var canvasDiaplay = false;
+
         function Refresh()
         {
-            //document.body.innerHTML = ConstLoadingHtml;
-            self.GlobalBFCanvas.Draw();
+            if (self.BFResourceContainer.GetResourceLoaded())
+            {
+                if (!canvasDiaplay)
+                {
+                    document.body.innerHTML = '';
+                    document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                    canvasDiaplay = true;
+                }
+                self.GlobalBFCanvas.Draw();
+            }
+            else
+            {
+                if (!loadingHtmlDisplay)
+                {
+                    document.body.innerHTML = ConstLoadingHtml;
+                    loadingHtmlDisplay = true;
+                }
+            }
         }
     };
 
