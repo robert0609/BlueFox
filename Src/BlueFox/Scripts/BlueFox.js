@@ -354,12 +354,22 @@ var BlueFox = (function (self)
 
         };
 
-        this.OnMouseDown = function (e)
+        this.OnLeftMouseDown = function (e)
         {
 
         };
 
-        this.OnMouseUp = function (e)
+        this.OnLeftMouseUp = function (e)
+        {
+
+        };
+
+        this.OnRightMouseDown = function (e)
+        {
+
+        };
+
+        this.OnRightMouseUp = function (e)
         {
 
         };
@@ -435,6 +445,7 @@ var BlueFox = (function (self)
 
         this.FindRender = function (x, y)
         {
+            // TODO:算法优化
             var ret = null;
             var render = null;
             for (var i = _renderList.length - 1; i > -1; --i)
@@ -467,7 +478,9 @@ var BlueFox = (function (self)
         _bufferCanvas.innerText = 'Sorry! The Web browser you\'re using doesn\'t support HTML5. Please try Chrome or Firefox.';
 
         AddEventHandler(_bufferCanvas, 'click', MouseClickEvent, false);
-        //AddEventHandler(_bufferCanvas, 'dblclick', MouseClickEvent, false);
+        AddEventHandler(_bufferCanvas, 'dblclick', MouseDoubleClickEvent, false);
+        AddEventHandler(_bufferCanvas, 'mousedown', MouseDownEvent, false);
+        AddEventHandler(_bufferCanvas, 'mouseup', MouseUpEvent, false);
 
         var _bufferContext = _bufferCanvas.getContext('2d');
         _bufferContext.fillStyle = 'red';
@@ -565,14 +578,83 @@ var BlueFox = (function (self)
                 {
                     self.SelectRender.OnUnSelect();
                 }
-                element.OnClick({ ClickX : clickX, ClickY: clickY });
+                element.OnClick({ ClickX : clickX, ClickY : clickY });
                 element.OnSelect();
                 self.SelectRender = element;
             }
             else
             {
                 element = self.SelectRender;
-                element.OnStartMove({ TargetX : clickX, TargetY: clickY });
+                element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
+            }
+            CancelEventFlow(e);
+        }
+
+        /**
+         * 鼠标双击事件
+         * @param e
+         * @event
+         */
+        function MouseDoubleClickEvent(e)
+        {
+            var clickX = e.pageX - this.offsetLeft;
+            var clickY = e.pageY - this.offsetTop;
+            // TODO:选择图层
+            var element = _layerList[1].FindRender(clickX, clickY);
+            if (element != null)
+            {
+                if (self.SelectRender != null)
+                {
+                    self.SelectRender.OnUnSelect();
+                }
+                element.OnDoubleClick({ ClickX : clickX, ClickY : clickY });
+                element.OnSelect();
+                self.SelectRender = element;
+            }
+            else
+            {
+                element = self.SelectRender;
+                element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 4 });
+            }
+            CancelEventFlow(e);
+        }
+
+        function MouseDownEvent(e)
+        {
+            var clickX = e.pageX - this.offsetLeft;
+            var clickY = e.pageY - this.offsetTop;
+            // TODO:选择图层
+            var element = _layerList[1].FindRender(clickX, clickY);
+            if (element != null)
+            {
+                if (e.button == 0)
+                {
+                    element.OnLeftMouseDown({ ClickX : clickX, ClickY : clickY });
+                }
+                else if (e.button == 2)
+                {
+                    element.OnRightMouseDown({ ClickX : clickX, ClickY : clickY });
+                }
+            }
+            CancelEventFlow(e);
+        }
+
+        function MouseUpEvent(e)
+        {
+            var clickX = e.pageX - this.offsetLeft;
+            var clickY = e.pageY - this.offsetTop;
+            // TODO:选择图层
+            var element = _layerList[1].FindRender(clickX, clickY);
+            if (element != null)
+            {
+                if (e.button == 0)
+                {
+                    element.OnLeftMouseUp({ ClickX : clickX, ClickY : clickY });
+                }
+                else if (e.button == 2)
+                {
+                    element.OnRightMouseUp({ ClickX : clickX, ClickY : clickY });
+                }
             }
             CancelEventFlow(e);
         }
@@ -823,7 +905,7 @@ var BlueFox = (function (self)
             this.OnStartMove = function (e)
             {
                 this.SetMoveTarget(e.TargetX, e.TargetY);
-                this.Speed = 2;
+                this.Speed = e.Speed;
             };
 
             /**
@@ -981,24 +1063,37 @@ var BlueFox = (function (self)
 
         function Refresh()
         {
-            if (self.BFResourceContainer.GetResourceLoaded())
+            AddEventHandler(self.GlobalBFCanvas.BufferCanvas(), 'mousemove', MouseMoveEvent, false);
+            try
             {
-                if (!canvasDiaplay)
+                if (self.BFResourceContainer.GetResourceLoaded())
                 {
-                    document.body.innerHTML = '';
-                    document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
-                    canvasDiaplay = true;
+                    if (!canvasDiaplay)
+                    {
+                        document.body.innerHTML = '';
+                        document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                        canvasDiaplay = true;
+                    }
+                    self.GlobalBFCanvas.Draw();
                 }
-                self.GlobalBFCanvas.Draw();
+                else
+                {
+                    if (!loadingHtmlDisplay)
+                    {
+                        document.body.innerHTML = ConstLoadingHtml;
+                        loadingHtmlDisplay = true;
+                    }
+                }
             }
-            else
+            finally
             {
-                if (!loadingHtmlDisplay)
-                {
-                    document.body.innerHTML = ConstLoadingHtml;
-                    loadingHtmlDisplay = true;
-                }
+                RemoveEventHandler(self.GlobalBFCanvas.BufferCanvas(), 'mousemove', MouseMoveEvent, false);
             }
+        }
+
+        function MouseMoveEvent(e)
+        {
+
         }
     };
 
