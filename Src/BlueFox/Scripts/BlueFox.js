@@ -310,6 +310,16 @@ var BlueFox = (function (self)
             }
             _image = self.BFResourceContainer.GetImage(id);
         };
+
+        /**
+         * 鼠标单击事件
+         * @param e:{ ClickX : clickX, ClickY: clickY }
+         * @event
+         */
+        this.OnClick = function (e)
+        {
+            this.Selected = true;
+        };
     }
 
     /**
@@ -501,6 +511,7 @@ var BlueFox = (function (self)
         {
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
+            // TODO:选择图层
             var element = _layerList[1].FindRender(clickX, clickY);
             if (element != null)
             {
@@ -508,14 +519,13 @@ var BlueFox = (function (self)
                 {
                     self.SelectRender.Selected = false;
                 }
+                element.OnClick({ ClickX : clickX, ClickY: clickY });
                 self.SelectRender = element;
-                self.SelectRender.Selected = true;
             }
             else
             {
                 element = self.SelectRender;
-                element.SetMoveTarget(clickX, clickY);
-                element.Speed = 2;
+                element.OnStartMove({ TargetX : clickX, TargetY: clickY });
             }
             CancelEventFlow(e);
         }
@@ -754,7 +764,29 @@ var BlueFox = (function (self)
                 if (bx && by)
                 {
                     this.Speed = 0;
+                    this.OnStopMove({ TargetX : tx, TargetY : ty });
                 }
+            };
+
+            /**
+             * 开始移动事件
+             * @param e:{ TargetX : clickX, TargetY: clickY }
+             * @event
+             */
+            this.OnStartMove = function (e)
+            {
+                this.SetMoveTarget(e.TargetX, e.TargetY);
+                this.Speed = 2;
+            };
+
+            /**
+             * 停止移动事件
+             * @param e:{ TargetX : clickX, TargetY: clickY }
+             * @event
+             */
+            this.OnStopMove = function (e)
+            {
+
             };
         }
 
