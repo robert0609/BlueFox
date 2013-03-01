@@ -327,7 +327,7 @@ var BlueFox = (function (self)
 
         this.Index = 0;
 
-        this.RenderList = new Array();
+        var _renderList = new Array();
 
         this.ParentCanvas = null;
 
@@ -351,14 +351,14 @@ var BlueFox = (function (self)
             if (this.Refresh)
             {
                 _context.clearRect(0, 0, w, h);
-                this.RenderList = this.RenderList.sort(function (a, b)
+                _renderList = _renderList.sort(function (a, b)
                 {
                     return a.ZOrder - b.ZOrder;
                 });
                 var render = null;
-                for (var i = 0; i < this.RenderList.length; ++i)
+                for (var i = 0; i < _renderList.length; ++i)
                 {
-                    render = this.RenderList[i];
+                    render = _renderList[i];
                     render.OnUpdate();
                     render.Draw(_context);
                 }
@@ -377,7 +377,24 @@ var BlueFox = (function (self)
         this.AddRender = function (render)
         {
             render.ParentLayer = this;
-            this.RenderList.push(render);
+            _renderList.push(render);
+        };
+
+        this.FindRender = function (x, y)
+        {
+            var ret = null;
+            var render = null;
+            for (var i = _renderList.length - 1; i > -1; --i)
+            {
+                render = _renderList[i];
+                if (x >= render.CLocation.X && x <= render.CLocation.X + render.CSize.Width &&
+                    y >= render.CLocation.Y && y <= render.CLocation.Y + render.CSize.Height)
+                {
+                    ret = render;
+                    break;
+                }
+            }
+            return ret;
         };
     }
 
@@ -389,7 +406,7 @@ var BlueFox = (function (self)
      */
     function BFCanvasClass(w, h)
     {
-        this.LayerList = new Array();
+        var _layerList = new Array();
 
         var _bufferCanvas = document.createElement('canvas');
         _bufferCanvas.width = w;
@@ -409,15 +426,15 @@ var BlueFox = (function (self)
             // 获取当前时刻
             var dt1 = (new Date()).getTime();
 
-            this.LayerList = this.LayerList.sort(function (a, b)
+            _layerList = _layerList.sort(function (a, b)
             {
                 return a.Index - b.Index;
             });
             var layer = null;
             var layerCanvas = null;
-            for (var i = 0; i < this.LayerList.length; ++i)
+            for (var i = 0; i < _layerList.length; ++i)
             {
-                layer = this.LayerList[i];
+                layer = _layerList[i];
                 layer.Draw();
                 layerCanvas = layer.LayerCanvas();
                 _bufferContext.drawImage(layerCanvas, 0, 0, layerCanvas.width, layerCanvas.height, 0, 0, w, h);
@@ -472,60 +489,39 @@ var BlueFox = (function (self)
         this.AddLayer = function (layer)
         {
             layer.ParentCanvas = this;
-            this.LayerList.push(layer);
+            _layerList.push(layer);
         };
+
+        /**
+         * 鼠标单击事件
+         * @param e
+         * @event
+         */
+        function MouseClickEvent(e)
+        {
+            var clickX = e.pageX - this.offsetLeft;
+            var clickY = e.pageY - this.offsetTop;
+            var element = _layerList[1].FindRender(clickX, clickY);
+            if (element != null)
+            {
+                if (self.SelectRender != null)
+                {
+                    self.SelectRender.Selected = false;
+                }
+                self.SelectRender = element;
+                self.SelectRender.Selected = true;
+            }
+            else
+            {
+                element = self.SelectRender;
+                element.SetMoveTarget(clickX, clickY);
+                element.Speed = 2;
+            }
+            CancelEventFlow(e);
+        }
     }
 
     /* BlueFox.World Begin */
-    /**
-     * 鼠标单击事件
-     * @param e
-     * @event
-     */
-    function MouseClickEvent(e)
-    {
-        var clickX = e.pageX - self.GlobalBFCanvas.LocationX();
-        var clickY = e.pageY - self.GlobalBFCanvas.LocationY();
-        var element = FindClickElement(clickX, clickY, self.GlobalBFCanvas.LayerList[1]);
-        if (element != null)
-        {
-            if (self.SelectRender != null)
-            {
-                self.SelectRender.Selected = false;
-            }
-            self.SelectRender = element;
-            self.SelectRender.Selected = true;
-        }
-        else
-        {
-            element = self.SelectRender;
-            element.SetMoveTarget(clickX, clickY);
-            element.Speed = 2;
-        }
-        CancelEventFlow(e);
-    }
-
-    function FindClickElement(clickX, clickY, BFLayer)
-    {
-        var ret = null;
-        var render = null;
-        BFLayer.RenderList = BFLayer.RenderList.sort(function (a, b)
-        {
-            return b.ZOrder - a.ZOrder;
-        });
-        for (var i = 0; i < BFLayer.RenderList.length; ++i)
-        {
-            render = BFLayer.RenderList[i];
-            if (clickX >= render.CLocation.X && clickX <= render.CLocation.X + render.CSize.Width &&
-                clickY >= render.CLocation.Y && clickY <= render.CLocation.Y + render.CSize.Height)
-            {
-                ret = render;
-                break;
-            }
-        }
-        return ret;
-    }
-
     function IsNullOrUndefined(obj)
     {
         if (obj == null || obj == undefined)
