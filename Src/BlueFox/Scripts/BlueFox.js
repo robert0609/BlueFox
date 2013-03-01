@@ -27,7 +27,7 @@ var BlueFox = (function (self)
         self.FoundationCellHeight = 16;
         // 全局画布
         self.GlobalBFCanvas = null;
-
+        // 当前选中的元素
         self.SelectRender = null;
         // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
         self.CurrentTime = 0;
@@ -318,7 +318,50 @@ var BlueFox = (function (self)
          */
         this.OnClick = function (e)
         {
+
+        };
+
+        this.OnDoubleClick = function (e)
+        {
+
+        };
+
+        /**
+         * 被选中事件
+         * @event
+         */
+        this.OnSelect = function ()
+        {
             this.Selected = true;
+        };
+
+        /**
+         * 失去选中状态事件
+         * @event
+         */
+        this.OnUnSelect = function ()
+        {
+            this.Selected = false;
+        };
+
+        this.OnMouseOver = function (e)
+        {
+
+        };
+
+        this.OnMouseOut = function (e)
+        {
+
+        };
+
+        this.OnMouseDown = function (e)
+        {
+
+        };
+
+        this.OnMouseUp = function (e)
+        {
+
         };
     }
 
@@ -422,7 +465,10 @@ var BlueFox = (function (self)
         _bufferCanvas.width = w;
         _bufferCanvas.height = h;
         _bufferCanvas.innerText = 'Sorry! The Web browser you\'re using doesn\'t support HTML5. Please try Chrome or Firefox.';
+
         AddEventHandler(_bufferCanvas, 'click', MouseClickEvent, false);
+        //AddEventHandler(_bufferCanvas, 'dblclick', MouseClickEvent, false);
+
         var _bufferContext = _bufferCanvas.getContext('2d');
         _bufferContext.fillStyle = 'red';
         _bufferContext.font = '20px Lucida Console';
@@ -517,9 +563,10 @@ var BlueFox = (function (self)
             {
                 if (self.SelectRender != null)
                 {
-                    self.SelectRender.Selected = false;
+                    self.SelectRender.OnUnSelect();
                 }
                 element.OnClick({ ClickX : clickX, ClickY: clickY });
+                element.OnSelect();
                 self.SelectRender = element;
             }
             else
