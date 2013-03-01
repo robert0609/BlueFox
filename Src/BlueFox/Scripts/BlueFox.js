@@ -223,7 +223,7 @@ var BlueFox = (function (self)
         var _context = _imageCanvas.getContext('2d');
 
         var _imageLoaded = false;
-        if (imageFilePath == undefined || imageFilePath == null || imageFilePath == '')
+        if (IsNullOrUndefined(imageFilePath) || imageFilePath == '')
         {
             _imageLoaded = true;
         }
@@ -258,6 +258,8 @@ var BlueFox = (function (self)
         this.ZOrder = 0;
 
         this.Selected = false;
+
+        this.ParentLayer = null;
 
         // 默认的资源图片
         var _image = self.BFResourceContainer.GetImage('default');;
@@ -327,6 +329,8 @@ var BlueFox = (function (self)
 
         this.RenderList = new Array();
 
+        this.ParentCanvas = null;
+
         var _layerCanvas = document.createElement('canvas');
         _layerCanvas.width = w;
         _layerCanvas.height = h;
@@ -368,6 +372,12 @@ var BlueFox = (function (self)
         this.LayerCanvas = function ()
         {
             return _layerCanvas;
+        };
+
+        this.AddRender = function (render)
+        {
+            render.ParentLayer = this;
+            this.RenderList.push(render);
         };
     }
 
@@ -458,6 +468,12 @@ var BlueFox = (function (self)
         {
             return _bufferCanvas;
         };
+
+        this.AddLayer = function (layer)
+        {
+            layer.ParentCanvas = this;
+            this.LayerList.push(layer);
+        };
     }
 
     /* BlueFox.World Begin */
@@ -528,119 +544,6 @@ var BlueFox = (function (self)
         }
         return false;
     }
-
-    self.CreateBFMapCell = function (mapCellEntity)
-    {
-        //继承基本绘图单元
-        BFMapCellClass.prototype = new BFRenderClass();
-
-        /**
-         * 地图单元格
-         * @param mapCellEntity: 该单元格的数据实体
-         * @constructor
-         */
-        function BFMapCellClass(mapCellEntity)
-        {
-            this.SLocation.X = mapCellEntity.SX;
-            this.SLocation.Y = mapCellEntity.SY;
-            this.SSize.Width = self.MapCellUnitLength;
-            this.SSize.Height = self.MapCellUnitLength;
-            this.CLocation = ConvertMapIndex2Location(mapCellEntity.XIndex, mapCellEntity.YIndex);
-            this.CSize.Width = self.MapCellUnitLength;
-            this.CSize.Height = self.MapCellUnitLength;
-            this.ZOrder = mapCellEntity.ZOrder;
-
-            this.OnUpdate = function ()
-            {
-            };
-
-            this.SetImage(mapCellEntity.ResourceId);
-        }
-
-        /**
-         * 将地图的单元格索引转换成画布坐标
-         * @param xIndex: x轴索引
-         * @param yIndex: y轴索引
-         * @return {BFLocationClass}
-         * @method
-         */
-        function ConvertMapIndex2Location(xIndex, yIndex)
-        {
-            var x = 0;
-            if (xIndex >= 1)
-            {
-                x = (xIndex - 1) * self.MapCellUnitLength;
-            }
-            var y = 0;
-            if (yIndex >= 1)
-            {
-                y = (yIndex - 1) * self.MapCellUnitLength;
-            }
-            return new BFLocationClass(x, y);
-        }
-
-        return new BFMapCellClass(mapCellEntity);
-    };
-
-    self.CreateBFBuilding = function (buildingEntity)
-    {
-        //继承基本绘图单元
-        BFBuildingClass.prototype = new BFRenderClass();
-
-        /**
-         * 地图上的阻碍物(建筑等)
-         * @param buildingEntity: 阻碍物的数据实体
-         * @constructor
-         */
-        function BFBuildingClass(buildingEntity)
-        {
-            this.SLocation.X = buildingEntity.SX;
-            this.SLocation.Y = buildingEntity.SY;
-            this.SSize.Width = buildingEntity.SWidth;
-            this.SSize.Height = buildingEntity.SHeight;
-            this.CLocation.X = buildingEntity.CX;
-            this.CLocation.Y = buildingEntity.CY;
-            this.CSize.Width = buildingEntity.CWidth;
-            this.CSize.Height = buildingEntity.CHeight;
-            this.ZOrder = buildingEntity.ZOrder;
-
-            this.OnUpdate = function ()
-            {
-            };
-
-            this.Foundation = new BFFoundationClass();
-            this.Foundation.BaseLocation = this.CLocation;
-            this.Foundation.AddCell(new BFFoundationCellClass(10, 50));
-            this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
-            this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
-
-            this.SetImage(buildingEntity.ResourceId);
-        }
-
-        function BFFoundationClass()
-        {
-            this.BaseLocation = new BFLocationClass(0, 0);
-            this.CellList = new Array();
-
-            this.AddCell = function (foundationCell)
-            {
-                this.CellList.push(foundationCell);
-            };
-
-            this.CheckConflict = function ()
-            {
-
-            };
-        }
-
-        function BFFoundationCellClass(x, y)
-        {
-            this.FLocation = new BFLocationClass(x, y);
-            this.FSize = new BFSizeClass(self.FoundationCellWidth, self.FoundationCellHeight);
-        }
-
-        return new BFBuildingClass(buildingEntity);
-    };
 
     /**
      * 创建画布上的绘制元素
@@ -873,6 +776,119 @@ var BlueFox = (function (self)
         return self.GlobalBFCanvas;
     };
     /* BlueFox.World End */
+
+    self.CreateBFMapCell = function (mapCellEntity)
+    {
+        //继承基本绘图单元
+        BFMapCellClass.prototype = new BFRenderClass();
+
+        /**
+         * 地图单元格
+         * @param mapCellEntity: 该单元格的数据实体
+         * @constructor
+         */
+        function BFMapCellClass(mapCellEntity)
+        {
+            this.SLocation.X = mapCellEntity.SX;
+            this.SLocation.Y = mapCellEntity.SY;
+            this.SSize.Width = self.MapCellUnitLength;
+            this.SSize.Height = self.MapCellUnitLength;
+            this.CLocation = ConvertMapIndex2Location(mapCellEntity.XIndex, mapCellEntity.YIndex);
+            this.CSize.Width = self.MapCellUnitLength;
+            this.CSize.Height = self.MapCellUnitLength;
+            this.ZOrder = mapCellEntity.ZOrder;
+
+            this.OnUpdate = function ()
+            {
+            };
+
+            this.SetImage(mapCellEntity.ResourceId);
+        }
+
+        /**
+         * 将地图的单元格索引转换成画布坐标
+         * @param xIndex: x轴索引
+         * @param yIndex: y轴索引
+         * @return {BFLocationClass}
+         * @method
+         */
+        function ConvertMapIndex2Location(xIndex, yIndex)
+        {
+            var x = 0;
+            if (xIndex >= 1)
+            {
+                x = (xIndex - 1) * self.MapCellUnitLength;
+            }
+            var y = 0;
+            if (yIndex >= 1)
+            {
+                y = (yIndex - 1) * self.MapCellUnitLength;
+            }
+            return new BFLocationClass(x, y);
+        }
+
+        return new BFMapCellClass(mapCellEntity);
+    };
+
+    self.CreateBFBuilding = function (buildingEntity)
+    {
+        //继承基本绘图单元
+        BFBuildingClass.prototype = new BFRenderClass();
+
+        /**
+         * 地图上的阻碍物(建筑等)
+         * @param buildingEntity: 阻碍物的数据实体
+         * @constructor
+         */
+        function BFBuildingClass(buildingEntity)
+        {
+            this.SLocation.X = buildingEntity.SX;
+            this.SLocation.Y = buildingEntity.SY;
+            this.SSize.Width = buildingEntity.SWidth;
+            this.SSize.Height = buildingEntity.SHeight;
+            this.CLocation.X = buildingEntity.CX;
+            this.CLocation.Y = buildingEntity.CY;
+            this.CSize.Width = buildingEntity.CWidth;
+            this.CSize.Height = buildingEntity.CHeight;
+            this.ZOrder = buildingEntity.ZOrder;
+
+            this.OnUpdate = function ()
+            {
+            };
+
+            this.Foundation = new BFFoundationClass();
+            this.Foundation.BaseLocation = this.CLocation;
+            this.Foundation.AddCell(new BFFoundationCellClass(10, 50));
+            this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
+            this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
+
+            this.SetImage(buildingEntity.ResourceId);
+        }
+
+        function BFFoundationClass()
+        {
+            this.BaseLocation = new BFLocationClass(0, 0);
+            this.CellList = new Array();
+
+            this.AddCell = function (foundationCell)
+            {
+                this.CellList.push(foundationCell);
+            };
+
+            this.CheckConflict = function ()
+            {
+
+            };
+        }
+
+        function BFFoundationCellClass(x, y)
+        {
+            this.FLocation = new BFLocationClass(x, y);
+            this.FSize = new BFSizeClass(self.FoundationCellWidth, self.FoundationCellHeight);
+        }
+
+        return new BFBuildingClass(buildingEntity);
+    };
 
     self.Run = function ()
     {

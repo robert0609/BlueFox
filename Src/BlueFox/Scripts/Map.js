@@ -31,19 +31,19 @@ function Load()
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer2.Index = 1;
         layer2.StrokeStyle('orange');
-        BFCanvas.LayerList.push(layer2);
-        BFCanvas.LayerList.push(layer1);
+        BFCanvas.AddLayer(layer2);
+        BFCanvas.AddLayer(layer1);
 
         layer1.Scale(BlueFox.LookAngle);
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {
             var mapCell = BlueFox.CreateBFMapCell(mapList[mapCellIdx]);
-            layer1.RenderList.push(mapCell);
+            layer1.AddRender(mapCell);
         }
         for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
         {
             var building = BlueFox.CreateBFMovableRender(buildingList[buildingIdx]);
-            layer2.RenderList.push(building);
+            layer2.AddRender(building);
         }
 
         BlueFox.Run();
