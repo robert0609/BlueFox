@@ -21,6 +21,11 @@
             canvas.width = 500;
             canvas.height = 400;
             canvas.innerHTML = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /><p style="margin-top: 0px; margin-bottom: 0px; font-family: Lucida Console; font-size: 10px; font-weight: bold;">test</p></td></tr></table>';
+            canvas.onmousemove = function (e)
+            {
+                alert('test');
+                canvas.onmousemove = null;
+            };
             document.body.appendChild(canvas);
         }
     </script>

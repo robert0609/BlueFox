@@ -311,16 +311,6 @@ var BlueFox = (function (self)
             _image = self.BFResourceContainer.GetImage(id);
         };
 
-        /**
-         * 鼠标单击事件
-         * @param e:{ ClickX : clickX, ClickY: clickY }
-         * @event
-         */
-        this.OnClick = function (e)
-        {
-
-        };
-
         this.OnDoubleClick = function (e)
         {
 
@@ -477,7 +467,6 @@ var BlueFox = (function (self)
         _bufferCanvas.height = h;
         _bufferCanvas.innerText = 'Sorry! The Web browser you\'re using doesn\'t support HTML5. Please try Chrome or Firefox.';
 
-        AddEventHandler(_bufferCanvas, 'click', MouseClickEvent, false);
         AddEventHandler(_bufferCanvas, 'dblclick', MouseDoubleClickEvent, false);
         AddEventHandler(_bufferCanvas, 'mousedown', MouseDownEvent, false);
         AddEventHandler(_bufferCanvas, 'mouseup', MouseUpEvent, false);
@@ -562,35 +551,6 @@ var BlueFox = (function (self)
         };
 
         /**
-         * 鼠标单击事件
-         * @param e
-         * @event
-         */
-        function MouseClickEvent(e)
-        {
-            var clickX = e.pageX - this.offsetLeft;
-            var clickY = e.pageY - this.offsetTop;
-            // TODO:选择图层
-            var element = _layerList[1].FindRender(clickX, clickY);
-            if (element != null)
-            {
-                if (self.SelectRender != null)
-                {
-                    self.SelectRender.OnUnSelect();
-                }
-                element.OnClick({ ClickX : clickX, ClickY : clickY });
-                element.OnSelect();
-                self.SelectRender = element;
-            }
-            else
-            {
-                element = self.SelectRender;
-                element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
-            }
-            CancelEventFlow(e);
-        }
-
-        /**
          * 鼠标双击事件
          * @param e
          * @event
@@ -629,11 +589,29 @@ var BlueFox = (function (self)
             {
                 if (e.button == 0)
                 {
+                    if (self.SelectRender != null)
+                    {
+                        self.SelectRender.OnUnSelect();
+                    }
                     element.OnLeftMouseDown({ ClickX : clickX, ClickY : clickY });
+                    element.OnSelect();
+                    self.SelectRender = element;
                 }
                 else if (e.button == 2)
                 {
                     element.OnRightMouseDown({ ClickX : clickX, ClickY : clickY });
+                }
+            }
+            else
+            {
+                if (e.button == 0)
+                {
+                    element = self.SelectRender;
+                    element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
+                }
+                else if (e.button == 2)
+                {
+                    // TODO:右键单击地图
                 }
             }
             CancelEventFlow(e);
@@ -1063,37 +1041,34 @@ var BlueFox = (function (self)
 
         function Refresh()
         {
-            AddEventHandler(self.GlobalBFCanvas.BufferCanvas(), 'mousemove', MouseMoveEvent, false);
-            try
+            if (self.BFResourceContainer.GetResourceLoaded())
             {
-                if (self.BFResourceContainer.GetResourceLoaded())
+                self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
+                if (!canvasDiaplay)
                 {
-                    if (!canvasDiaplay)
-                    {
-                        document.body.innerHTML = '';
-                        document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
-                        canvasDiaplay = true;
-                    }
-                    self.GlobalBFCanvas.Draw();
+                    document.body.innerHTML = '';
+                    document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                    canvasDiaplay = true;
                 }
-                else
-                {
-                    if (!loadingHtmlDisplay)
-                    {
-                        document.body.innerHTML = ConstLoadingHtml;
-                        loadingHtmlDisplay = true;
-                    }
-                }
+                self.GlobalBFCanvas.Draw();
             }
-            finally
+            else
             {
-                RemoveEventHandler(self.GlobalBFCanvas.BufferCanvas(), 'mousemove', MouseMoveEvent, false);
+                if (!loadingHtmlDisplay)
+                {
+                    document.body.innerHTML = ConstLoadingHtml;
+                    loadingHtmlDisplay = true;
+                }
             }
         }
 
         function MouseMoveEvent(e)
         {
+            self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
+            var clickX = e.pageX - this.offsetLeft;
+            var clickY = e.pageY - this.offsetTop;
 
+            CancelEventFlow(e);
         }
     };
 
