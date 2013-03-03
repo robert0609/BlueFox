@@ -29,6 +29,10 @@ var BlueFox = (function (self)
         self.GlobalBFCanvas = null;
         // 当前选中的元素
         self.SelectRender = null;
+        // 当前捕获了鼠标光标的元素
+        self.CaptureMouseRender = null;
+        // 当前鼠标拖住的元素
+        self.DragedRender = null;
         // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
         self.CurrentTime = 0;
     }
@@ -249,6 +253,9 @@ var BlueFox = (function (self)
      */
     function BFRenderClass()
     {
+        // TODO:GUID
+        this.GUID = '';
+
         this.CLocation = new BFLocationClass(0, 0);
         this.CSize = new BFSizeClass(0, 0);
 
@@ -542,6 +549,11 @@ var BlueFox = (function (self)
         this.BufferCanvas = function ()
         {
             return _bufferCanvas;
+        };
+
+        this.LayerList = function ()
+        {
+            return _layerList;
         };
 
         this.AddLayer = function (layer)
@@ -1067,7 +1079,33 @@ var BlueFox = (function (self)
             self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
-
+            // TODO:选择图层
+            var element = _layerList[1].FindRender(clickX, clickY);
+            if (self.CaptureMouseRender == null)
+            {
+                if (element != null)
+                {
+                    element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
+                    self.CaptureMouseRender = element;
+                }
+            }
+            else
+            {
+                if (element == null)
+                {
+                    element.OnMouseOut({ ClickX : clickX, ClickY : clickY });
+                    self.CaptureMouseRender = null;
+                }
+                else
+                {
+                    if (self.CaptureMouseRender.GUID != element.GUID)
+                    {
+                        self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
+                        element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
+                        self.CaptureMouseRender = element;
+                    }
+                }
+            }
             CancelEventFlow(e);
         }
     };
