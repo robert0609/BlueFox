@@ -293,10 +293,10 @@ var BlueFox = (function (self)
          */
         this.OnUpdate = function ()
         {
-            this.SLocation = new BFLocationClass(0, 0);
-            this.SSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
-            this.CLocation = new BFLocationClass(0, 0);
-            this.CSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
+//            this.SLocation = new BFLocationClass(0, 0);
+//            this.SSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
+//            this.CLocation = new BFLocationClass(0, 0);
+//            this.CSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
         };
 
         /**
@@ -821,6 +821,9 @@ var BlueFox = (function (self)
 
         function BFMovableRenderClass()
         {
+            // 元素移动的基准位置坐标
+            this.CenterLocation = new BFLocationClass(this.CLocation.X + Math.floor(this.CSize.Width / 2), this.CLocation.Y + Math.floor(this.CSize.Height / 2));
+
             // 移动目标坐标
             var _targetX = 0;
             var _targetY = 0;
@@ -840,19 +843,19 @@ var BlueFox = (function (self)
             {
                 _targetX = x;
                 _targetY = y;
-                if (_targetX > this.CLocation.X)
+                if (_targetX > this.CenterLocation.X)
                 {
                     this.DirectionX = 1;
                 }
-                else if (_targetX < this.CLocation.X)
+                else if (_targetX < this.CenterLocation.X)
                 {
                     this.DirectionX = -1;
                 }
-                if (_targetY > this.CLocation.Y)
+                if (_targetY > this.CenterLocation.Y)
                 {
                     this.DirectionY = 1;
                 }
-                else if (_targetY < this.CLocation.Y)
+                else if (_targetY < this.CenterLocation.Y)
                 {
                     this.DirectionY = -1;
                 }
@@ -892,13 +895,13 @@ var BlueFox = (function (self)
                 if (dFlag == 'x')
                 {
                     t = _targetX;
-                    c = this.CLocation.X;
+                    c = this.CenterLocation.X;
                     d = this.DirectionX;
                 }
                 else if (dFlag == 'y')
                 {
                     t = _targetY;
-                    c = this.CLocation.Y;
+                    c = this.CenterLocation.Y;
                     d = this.DirectionY;
                 }
 
@@ -960,22 +963,26 @@ var BlueFox = (function (self)
                 var by = false;
                 var tx = this.TargetX();
                 var ty = this.TargetY();
-                this.CLocation.X += this.DirectionX * this.Speed;
+
+                this.CenterLocation.X += this.DirectionX * this.Speed;
                 bx = this.CheckExceedX();
                 if (bx)
                 {
-                    this.CLocation.X = tx;
+                    this.CenterLocation.X = tx;
                     this.DirectionX = 0;
                 }
-                this.CLocation.Y += this.DirectionY * this.Speed;
-                this.ZOrder = this.CLocation.Y + this.CSize.Height;
+                this.CLocation.X = this.CenterLocation.X - Math.floor(this.CSize.Width / 2);
+
+                this.CenterLocation.Y += this.DirectionY * this.Speed;
                 by = this.CheckExceedY();
                 if (by)
                 {
-                    this.CLocation.Y = ty;
-                    this.ZOrder = this.CLocation.Y + this.CSize.Height;
+                    this.CenterLocation.Y = ty;
                     this.DirectionY = 0;
                 }
+                this.CLocation.Y = this.CenterLocation.Y - Math.floor(this.CSize.Height / 2);
+
+                this.ZOrder = this.CLocation.Y + this.CSize.Height;
 
                 if (bx && by)
                 {
