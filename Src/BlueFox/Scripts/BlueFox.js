@@ -369,12 +369,12 @@ var BlueFox = (function (self)
 
         this.OnMouseOver = function (e)
         {
-            self.CaptureMouseRender = this;
+
         };
 
         this.OnMouseOut = function (e)
         {
-            self.CaptureMouseRender = null;
+
         };
 
         this.OnLeftMouseDown = function (e)
@@ -386,11 +386,12 @@ var BlueFox = (function (self)
             }
             this.Select();
             self.SelectRender = this;
+            self.DragedRender = this;
         };
 
         this.OnLeftMouseUp = function (e)
         {
-
+            self.DragedRender = null;
         };
 
         this.OnRightMouseDown = function (e)
@@ -1175,12 +1176,15 @@ var BlueFox = (function (self)
             self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
+            if (self.DragedRender == null)
+            {
             var element = self.GlobalBFCanvas.FindRender(clickX, clickY);
             if (self.CaptureMouseRender == null)
             {
                 if (element != null)
                 {
                     element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
+                    self.CaptureMouseRender = element;
                 }
             }
             else
@@ -1188,6 +1192,7 @@ var BlueFox = (function (self)
                 if (element == null)
                 {
                     self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
+                    self.CaptureMouseRender = null;
                 }
                 else
                 {
@@ -1195,8 +1200,17 @@ var BlueFox = (function (self)
                     {
                         self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
                         element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
+                        self.CaptureMouseRender = element;
                     }
                 }
+            }
+            }
+            else
+            {
+                // TODO:
+                self.DragedRender.CLocation.X = clickX;
+                self.DragedRender.CLocation.Y = clickY;
+                self.DragedRender.ZOrder = self.DragedRender.CLocation.Y + self.DragedRender.CSize.Height;
             }
             CancelEventFlow(e);
         }
