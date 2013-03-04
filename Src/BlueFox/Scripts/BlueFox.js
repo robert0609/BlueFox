@@ -389,17 +389,7 @@ var BlueFox = (function (self)
             self.DragedRender = this;
         };
 
-        this.OnLeftMouseUp = function (e)
-        {
-            self.DragedRender = null;
-        };
-
         this.OnRightMouseDown = function (e)
-        {
-
-        };
-
-        this.OnRightMouseUp = function (e)
         {
 
         };
@@ -725,18 +715,19 @@ var BlueFox = (function (self)
         {
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
-            var element = innerFindRender(clickX, clickY);
-            if (element != null)
-            {
-                if (e.button == 0)
-                {
-                    element.OnLeftMouseUp({ ClickX : clickX, ClickY : clickY });
-                }
-                else if (e.button == 2)
-                {
-                    element.OnRightMouseUp({ ClickX : clickX, ClickY : clickY });
-                }
-            }
+            self.DragedRender = null;
+//            var element = innerFindRender(clickX, clickY);
+//            if (element != null)
+//            {
+//                if (e.button == 0)
+//                {
+//                    element.OnLeftMouseUp({ ClickX : clickX, ClickY : clickY });
+//                }
+//                else if (e.button == 2)
+//                {
+//                    element.OnRightMouseUp({ ClickX : clickX, ClickY : clickY });
+//                }
+//            }
             CancelEventFlow(e);
         }
 
@@ -822,7 +813,7 @@ var BlueFox = (function (self)
         function BFMovableRenderClass()
         {
             // 元素移动的基准位置坐标
-            this.CenterLocation = new BFLocationClass(this.CLocation.X + Math.floor(this.CSize.Width / 2), this.CLocation.Y + Math.floor(this.CSize.Height / 2));
+            this.CenterLocation = new BFLocationClass(this.CLocation.X + Math.floor(this.CSize.Width / 2), this.CLocation.Y + this.CSize.Height);
 
             // 移动目标坐标
             var _targetX = 0;
@@ -980,7 +971,7 @@ var BlueFox = (function (self)
                     this.CenterLocation.Y = ty;
                     this.DirectionY = 0;
                 }
-                this.CLocation.Y = this.CenterLocation.Y - Math.floor(this.CSize.Height / 2);
+                this.CLocation.Y = this.CenterLocation.Y - this.CSize.Height;
 
                 this.ZOrder = this.CLocation.Y + this.CSize.Height;
 
@@ -1214,9 +1205,10 @@ var BlueFox = (function (self)
             }
             else
             {
-                // TODO:
-                self.DragedRender.CLocation.X = clickX;
-                self.DragedRender.CLocation.Y = clickY;
+                self.DragedRender.CenterLocation.X = clickX;
+                self.DragedRender.CenterLocation.Y = clickY;
+                self.DragedRender.CLocation.X = self.DragedRender.CenterLocation.X - Math.floor(self.DragedRender.CSize.Width / 2);
+                self.DragedRender.CLocation.Y = self.DragedRender.CenterLocation.Y - self.DragedRender.CSize.Height;
                 self.DragedRender.ZOrder = self.DragedRender.CLocation.Y + self.DragedRender.CSize.Height;
             }
             CancelEventFlow(e);
