@@ -1205,6 +1205,7 @@ var BlueFox = (function (self)
             }
             else
             {
+                // TODO
                 self.DragedRender.CenterLocation.X = clickX;
                 self.DragedRender.CenterLocation.Y = clickY;
                 self.DragedRender.CLocation.X = self.DragedRender.CenterLocation.X - Math.floor(self.DragedRender.CSize.Width / 2);
