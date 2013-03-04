@@ -264,7 +264,7 @@ var BlueFox = (function (self)
         // Z-Order与CLocation.Y + CSize.Height相等
         this.ZOrder = 0;
 
-        this.Selected = false;
+        var _selected = false;
 
         this.ParentLayer = null;
 
@@ -280,7 +280,7 @@ var BlueFox = (function (self)
             if (_image.GetImageLoaded())
             {
                 context.drawImage(_image.GetImageCanvas(), this.SLocation.X, this.SLocation.Y, this.SSize.Width, this.SSize.Height, this.CLocation.X, this.CLocation.Y, this.CSize.Width, this.CSize.Height);
-                if (this.Selected)
+                if (_selected)
                 {
                     context.strokeRect(this.CLocation.X, this.CLocation.Y, this.CSize.Width, this.CSize.Height);
                 }
@@ -328,9 +328,27 @@ var BlueFox = (function (self)
             return false;
         };
 
+        this.Select = function ()
+        {
+            _selected = true;
+            this.OnSelect();
+        };
+
+        this.UnSelect = function ()
+        {
+            _selected = false;
+            this.OnUnSelect();
+        };
+
         this.OnDoubleClick = function (e)
         {
-
+            // TODO:优化
+            if (self.SelectRender != null)
+            {
+                self.SelectRender.UnSelect();
+            }
+            this.Select();
+            self.SelectRender = this;
         };
 
         /**
@@ -339,7 +357,6 @@ var BlueFox = (function (self)
          */
         this.OnSelect = function ()
         {
-            this.Selected = true;
         };
 
         /**
@@ -348,22 +365,27 @@ var BlueFox = (function (self)
          */
         this.OnUnSelect = function ()
         {
-            this.Selected = false;
         };
 
         this.OnMouseOver = function (e)
         {
-
+            self.CaptureMouseRender = this;
         };
 
         this.OnMouseOut = function (e)
         {
-
+            self.CaptureMouseRender = null;
         };
 
         this.OnLeftMouseDown = function (e)
         {
-
+            // TODO:优化
+            if (self.SelectRender != null)
+            {
+                self.SelectRender.UnSelect();
+            }
+            this.Select();
+            self.SelectRender = this;
         };
 
         this.OnLeftMouseUp = function (e)
@@ -657,13 +679,7 @@ var BlueFox = (function (self)
             var element = innerFindRender(clickX, clickY);
             if (element != null)
             {
-                if (self.SelectRender != null)
-                {
-                    self.SelectRender.OnUnSelect();
-                }
                 element.OnDoubleClick({ ClickX : clickX, ClickY : clickY });
-                element.OnSelect();
-                self.SelectRender = element;
             }
             else
             {
@@ -678,18 +694,11 @@ var BlueFox = (function (self)
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
             var element = innerFindRender(clickX, clickY);
-            debugger;
             if (element != null)
             {
                 if (e.button == 0)
                 {
-                    if (self.SelectRender != null)
-                    {
-                        self.SelectRender.OnUnSelect();
-                    }
                     element.OnLeftMouseDown({ ClickX : clickX, ClickY : clickY });
-                    element.OnSelect();
-                    self.SelectRender = element;
                 }
                 else if (e.button == 2)
                 {
@@ -1172,15 +1181,13 @@ var BlueFox = (function (self)
                 if (element != null)
                 {
                     element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
-                    self.CaptureMouseRender = element;
                 }
             }
             else
             {
                 if (element == null)
                 {
-                    element.OnMouseOut({ ClickX : clickX, ClickY : clickY });
-                    self.CaptureMouseRender = null;
+                    self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
                 }
                 else
                 {
@@ -1188,7 +1195,6 @@ var BlueFox = (function (self)
                     {
                         self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
                         element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
-                        self.CaptureMouseRender = element;
                     }
                 }
             }
