@@ -46,6 +46,19 @@ function CancelEventFlow(event)
     }
 }
 
+function CancelDefault(event)
+{
+    event = event || window.event;
+    if (event.preventDefault)
+    {
+        event.preventDefault();
+    }
+    else
+    {
+        event,returnValue = false;
+    }
+}
+
 function NewGUID()
 {
     var guid = '';

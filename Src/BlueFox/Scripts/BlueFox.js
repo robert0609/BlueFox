@@ -535,6 +535,7 @@ var BlueFox = (function (self)
         AddEventHandler(_bufferCanvas, 'dblclick', MouseDoubleClickEvent, false);
         AddEventHandler(_bufferCanvas, 'mousedown', MouseDownEvent, false);
         AddEventHandler(_bufferCanvas, 'mouseup', MouseUpEvent, false);
+        AddEventHandler(_bufferCanvas, 'contextmenu', ContextMenuEvent, false);
 
         var _bufferContext = _bufferCanvas.getContext('2d');
         _bufferContext.fillStyle = 'red';
@@ -620,6 +621,30 @@ var BlueFox = (function (self)
             _layerList.push(layer);
         };
 
+        this.FindRender = function (x, y)
+        {
+            return innerFindRender(x, y);
+        };
+
+        function innerFindRender(x, y)
+        {
+            var element = null;
+            for (var i = _layerList.length - 1; i > -1; --i)
+            {
+                var layer = _layerList[i];
+                if (!layer.Refresh)
+                {
+                    continue;
+                }
+                element = layer.FindRender(x, y);
+                if (element != null)
+                {
+                    break;
+                }
+            }
+            return element;
+        }
+
         /**
          * 鼠标双击事件
          * @param e
@@ -629,8 +654,7 @@ var BlueFox = (function (self)
         {
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
-            // TODO:选择图层
-            var element = _layerList[1].FindRender(clickX, clickY);
+            var element = innerFindRender(clickX, clickY);
             if (element != null)
             {
                 if (self.SelectRender != null)
@@ -653,8 +677,8 @@ var BlueFox = (function (self)
         {
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
-            // TODO:选择图层
-            var element = _layerList[1].FindRender(clickX, clickY);
+            var element = innerFindRender(clickX, clickY);
+            debugger;
             if (element != null)
             {
                 if (e.button == 0)
@@ -681,7 +705,7 @@ var BlueFox = (function (self)
                 }
                 else if (e.button == 2)
                 {
-                    // TODO:右键单击地图
+                    // TODO:右键单击“空白”区域
                 }
             }
             CancelEventFlow(e);
@@ -691,8 +715,7 @@ var BlueFox = (function (self)
         {
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
-            // TODO:选择图层
-            var element = _layerList[1].FindRender(clickX, clickY);
+            var element = innerFindRender(clickX, clickY);
             if (element != null)
             {
                 if (e.button == 0)
@@ -704,6 +727,12 @@ var BlueFox = (function (self)
                     element.OnRightMouseUp({ ClickX : clickX, ClickY : clickY });
                 }
             }
+            CancelEventFlow(e);
+        }
+
+        function ContextMenuEvent(e)
+        {
+            CancelDefault(e);
             CancelEventFlow(e);
         }
     }
@@ -1137,8 +1166,7 @@ var BlueFox = (function (self)
             self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
-            // TODO:选择图层
-            var element = self.GlobalBFCanvas.LayerList()[1].FindRender(clickX, clickY);
+            var element = self.GlobalBFCanvas.FindRender(clickX, clickY);
             if (self.CaptureMouseRender == null)
             {
                 if (element != null)
