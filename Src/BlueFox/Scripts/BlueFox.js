@@ -253,8 +253,7 @@ var BlueFox = (function (self)
      */
     function BFRenderClass()
     {
-        // TODO:GUID
-        this.GUID = '';
+        this.GUID = NewGUID();
 
         this.CLocation = new BFLocationClass(0, 0);
         this.CSize = new BFSizeClass(0, 0);
@@ -316,6 +315,16 @@ var BlueFox = (function (self)
                 id = resourceId;
             }
             _image = self.BFResourceContainer.GetImage(id);
+        };
+
+        this.Contains = function (x, y)
+        {
+            if (x >= this.CLocation.X && x <= this.CLocation.X + this.CSize.Width &&
+                y >= this.CLocation.Y && y <= this.CLocation.Y + this.CSize.Height)
+            {
+                return true;
+            }
+            return false;
         };
 
         this.OnDoubleClick = function (e)
@@ -448,8 +457,7 @@ var BlueFox = (function (self)
             for (var i = _renderList.length - 1; i > -1; --i)
             {
                 render = _renderList[i];
-                if (x >= render.CLocation.X && x <= render.CLocation.X + render.CSize.Width &&
-                    y >= render.CLocation.Y && y <= render.CLocation.Y + render.CSize.Height)
+                if (render.Contains(x, y))
                 {
                     ret = render;
                     break;
@@ -696,7 +704,7 @@ var BlueFox = (function (self)
         render.CLocation.Y = renderEntity.CY;
         render.CSize.Width = renderEntity.CWidth;
         render.CSize.Height = renderEntity.CHeight;
-        render.ZOrder = renderEntity.ZOrder;
+        render.ZOrder = renderEntity.CY;
 
         return render;
     };
@@ -1080,7 +1088,7 @@ var BlueFox = (function (self)
             var clickX = e.pageX - this.offsetLeft;
             var clickY = e.pageY - this.offsetTop;
             // TODO:选择图层
-            var element = _layerList[1].FindRender(clickX, clickY);
+            var element = self.GlobalBFCanvas.LayerList()[1].FindRender(clickX, clickY);
             if (self.CaptureMouseRender == null)
             {
                 if (element != null)
