@@ -261,6 +261,7 @@ var BlueFox = (function (self)
         this.SLocation = new BFLocationClass(0, 0);
         this.SSize = new BFSizeClass(0, 0);
 
+        // Z-Order与CLocation.Y + CSize.Height相等
         this.ZOrder = 0;
 
         this.Selected = false;
@@ -400,6 +401,9 @@ var BlueFox = (function (self)
 
         this.ParentCanvas = null;
 
+        // 该字段缓存当前图层中高度最大的元素的高度值，用以辅助判断鼠标点击在哪个元素上
+        this.RenderHeightMax = 0;
+
         var _layerCanvas = document.createElement('canvas');
         _layerCanvas.width = w;
         _layerCanvas.height = h;
@@ -428,6 +432,10 @@ var BlueFox = (function (self)
                 for (var i = 0; i < _renderList.length; ++i)
                 {
                     render = _renderList[i];
+                    if (render.CSize.Height > this.RenderHeightMax)
+                    {
+                        this.RenderHeightMax = render.CSize.Height;
+                    }
                     render.OnUpdate();
                     render.Draw(_context);
                 }
@@ -451,10 +459,10 @@ var BlueFox = (function (self)
 
         this.FindRender = function (x, y)
         {
-            // TODO:算法优化
             var ret = null;
             var render = null;
-            for (var i = _renderList.length - 1; i > -1; --i)
+            var start = FindLessOrEqual(y + this.RenderHeightMax);
+            for (var i = start; i > -1; --i)
             {
                 render = _renderList[i];
                 if (render.Contains(x, y))
@@ -465,6 +473,48 @@ var BlueFox = (function (self)
             }
             return ret;
         };
+
+        /**
+         * 在本图层的元素列表中查找ZOrder小于等于z的元素，返回它们的最大索引
+         * @param z
+         * @method
+         */
+        function FindLessOrEqual(z)
+        {
+            var first = 0;
+            var last = _renderList.length - 1;
+            var middle = first + Math.floor((last - first) / 2);
+
+            while (true)
+            {
+                if (_renderList[middle].ZOrder <= z && _renderList[middle + 1].ZOrder > z)
+                {
+                    break;
+                }
+                else if (z < _renderList[middle].ZOrder)
+                {
+                    if (middle == 0)
+                    {
+                        middle = -1;
+                        break;
+                    }
+                    last = middle;
+                    middle = first + Math.floor((last - first) / 2);
+                }
+                else
+                {
+                    if (middle + 1 == _renderList.length - 1)
+                    {
+                        middle = _renderList.length - 1;
+                        break;
+                    }
+                    first = middle;
+                    middle = first + Math.floor((last - first) / 2);
+                }
+            }
+
+            return middle;
+        }
     }
 
     /**
@@ -704,7 +754,7 @@ var BlueFox = (function (self)
         render.CLocation.Y = renderEntity.CY;
         render.CSize.Width = renderEntity.CWidth;
         render.CSize.Height = renderEntity.CHeight;
-        render.ZOrder = renderEntity.CY;
+        render.ZOrder = renderEntity.CY + renderEntity.CHeight;
 
         return render;
     };
@@ -879,12 +929,12 @@ var BlueFox = (function (self)
                     this.DirectionX = 0;
                 }
                 this.CLocation.Y += this.DirectionY * this.Speed;
-                this.ZOrder = this.CLocation.Y;
+                this.ZOrder = this.CLocation.Y + this.CSize.Height;
                 by = this.CheckExceedY();
                 if (by)
                 {
                     this.CLocation.Y = ty;
-                    this.ZOrder = this.CLocation.Y;
+                    this.ZOrder = this.CLocation.Y + this.CSize.Height;
                     this.DirectionY = 0;
                 }
 
@@ -951,7 +1001,7 @@ var BlueFox = (function (self)
             this.CLocation = ConvertMapIndex2Location(mapCellEntity.XIndex, mapCellEntity.YIndex);
             this.CSize.Width = self.MapCellUnitLength;
             this.CSize.Height = self.MapCellUnitLength;
-            this.ZOrder = mapCellEntity.ZOrder;
+            this.ZOrder = this.CLocation.Y + self.MapCellUnitLength;
 
             this.OnUpdate = function ()
             {
@@ -1005,7 +1055,7 @@ var BlueFox = (function (self)
             this.CLocation.Y = buildingEntity.CY;
             this.CSize.Width = buildingEntity.CWidth;
             this.CSize.Height = buildingEntity.CHeight;
-            this.ZOrder = buildingEntity.ZOrder;
+            this.ZOrder = buildingEntity.CY + buildingEntity.CHeight;
 
             this.OnUpdate = function ()
             {

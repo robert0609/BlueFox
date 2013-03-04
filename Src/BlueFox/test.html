@@ -17,16 +17,56 @@
 //            ctx.font = '20px Lucida Console';
 //            ctx.strokeRect(0, 0, 500, 400);
 //            ctx.fillText('test', 100, 100);
-            var canvas = document.createElement('canvas');
-            canvas.width = 500;
-            canvas.height = 400;
-            canvas.innerHTML = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /><p style="margin-top: 0px; margin-bottom: 0px; font-family: Lucida Console; font-size: 10px; font-weight: bold;">test</p></td></tr></table>';
-            canvas.onmousemove = function (e)
+//            var canvas = document.createElement('canvas');
+//            canvas.width = 500;
+//            canvas.height = 400;
+//            canvas.innerHTML = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /><p style="margin-top: 0px; margin-bottom: 0px; font-family: Lucida Console; font-size: 10px; font-weight: bold;">test</p></td></tr></table>';
+//            canvas.onmousemove = function (e)
+//            {
+//                alert('test');
+//                canvas.onmousemove = null;
+//            };
+//            document.body.appendChild(canvas);
+
+            alert(FindLessOrEqual(1000));
+        }
+
+        var _renderList = [1, 23, 33, 40, 54, 76, 113, 432, 5678, 9823];
+        function FindLessOrEqual(z)
+        {
+            var first = 0;
+            var last = _renderList.length - 1;
+            var middle = first + Math.floor((last - first) / 2);
+
+            while (true)
             {
-                alert('test');
-                canvas.onmousemove = null;
-            };
-            document.body.appendChild(canvas);
+                if (_renderList[middle] <= z && _renderList[middle + 1] > z)
+                {
+                    break;
+                }
+                else if (z < _renderList[middle])
+                {
+                    if (middle == 0)
+                    {
+                        middle = -1;
+                        break;
+                    }
+                    last = middle;
+                    middle = first + Math.floor((last - first) / 2);
+                }
+                else
+                {
+                    if (middle + 1 == _renderList.length - 1)
+                    {
+                        middle = _renderList.length - 1;
+                        break;
+                    }
+                    first = middle;
+                    middle = first + Math.floor((last - first) / 2);
+                }
+            }
+
+            return middle;
         }
     </script>
 </head>
