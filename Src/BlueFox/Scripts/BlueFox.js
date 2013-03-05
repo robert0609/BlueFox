@@ -21,7 +21,6 @@ var BlueFox = (function (self)
         self.FPS = 30;
         // 每帧间隔时间，毫秒
         self.Interval = 1000 / self.FPS;
-        self.MapCellUnitLength = 64;
         self.LookAngle = Math.PI / 6;
         self.FoundationCellWidth = 16;
         self.FoundationCellHeight = 16;
@@ -1023,59 +1022,6 @@ var BlueFox = (function (self)
         return self.GlobalBFCanvas;
     };
     /* BlueFox.World End */
-
-    self.CreateBFMapCell = function (mapCellEntity)
-    {
-        //继承基本绘图单元
-        BFMapCellClass.prototype = new BFRenderClass();
-
-        /**
-         * 地图单元格
-         * @param mapCellEntity: 该单元格的数据实体
-         * @constructor
-         */
-        function BFMapCellClass(mapCellEntity)
-        {
-            this.SLocation.X = mapCellEntity.SX;
-            this.SLocation.Y = mapCellEntity.SY;
-            this.SSize.Width = self.MapCellUnitLength;
-            this.SSize.Height = self.MapCellUnitLength;
-            this.CLocation = ConvertMapIndex2Location(mapCellEntity.XIndex, mapCellEntity.YIndex);
-            this.CSize.Width = self.MapCellUnitLength;
-            this.CSize.Height = self.MapCellUnitLength;
-            this.ZOrder = this.CLocation.Y + self.MapCellUnitLength;
-
-            this.OnUpdate = function ()
-            {
-            };
-
-            this.SetImage(mapCellEntity.ResourceId);
-        }
-
-        /**
-         * 将地图的单元格索引转换成画布坐标
-         * @param xIndex: x轴索引
-         * @param yIndex: y轴索引
-         * @return {BFLocationClass}
-         * @method
-         */
-        function ConvertMapIndex2Location(xIndex, yIndex)
-        {
-            var x = 0;
-            if (xIndex >= 1)
-            {
-                x = (xIndex - 1) * self.MapCellUnitLength;
-            }
-            var y = 0;
-            if (yIndex >= 1)
-            {
-                y = (yIndex - 1) * self.MapCellUnitLength;
-            }
-            return new BFLocationClass(x, y);
-        }
-
-        return new BFMapCellClass(mapCellEntity);
-    };
 
     self.CreateBFBuilding = function (buildingEntity)
     {

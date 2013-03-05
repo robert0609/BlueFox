@@ -37,7 +37,7 @@ function Load()
         layer1.Scale(BlueFox.LookAngle);
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {
-            var mapCell = BlueFox.CreateBFMapCell(mapList[mapCellIdx]);
+            var mapCell = BlueFox.CreateBFRender(mapList[mapCellIdx]);
             layer1.AddRender(mapCell);
         }
         for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
