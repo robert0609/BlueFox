@@ -418,6 +418,8 @@ var BlueFox = (function (self)
 
         this.ParentCanvas = null;
 
+        var _scaleY = 1;
+
         // 该字段缓存当前图层中高度最大的元素的高度值，用以辅助判断鼠标点击在哪个元素上
         this.RenderHeightMax = 0;
 
@@ -428,7 +430,8 @@ var BlueFox = (function (self)
 
         this.Scale = function (angle)
         {
-            _context.scale(1, Math.sin(angle));
+            _scaleY = Math.sin(angle);
+            _context.scale(1, _scaleY);
         };
 
         this.StrokeStyle = function (color)
@@ -1034,6 +1037,11 @@ var BlueFox = (function (self)
     self.CreateBFLayer = function (w, h)
     {
         return new BFLayerClass(w, h);
+    };
+
+    self.CreateBFScaleLayer = function (w, h)
+    {
+
     };
 
     self.CreateBFCanvas = function (w, h)
