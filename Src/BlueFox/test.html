@@ -28,7 +28,14 @@
 //            };
 //            document.body.appendChild(canvas);
 
-            alert(FindLessOrEqual(1000));
+            debugger;
+            CallFunction(FindLessOrEqual, 1000);
+        }
+
+        function CallFunction(func, args)
+        {
+            var v = func(args);
+            alert(v);
         }
 
         var _renderList = [1, 23, 33, 40, 54, 76, 113, 432, 5678, 9823];
