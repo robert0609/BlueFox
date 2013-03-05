@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>碰撞检测</title>
+    <style type="text/css">
+        *{margin: 0px;padding: 0px;}
+        #circle{width: 80px;height: 80px;border: 1px solid #FF0000;border-radius: 50px;background: #FF6600;position: absolute;left: 0px;top: 0px;}
+        #rect{width: 150px;height: 150px;background: #00FF00;position: absolute;left: 200px;top: 50px;}
+    </style>
+</head>
+<body>
+<div id="circle"><br /></div><div id="rect"><br /></div><script type="text/javascript">
+    //圆形与矩形的碰撞检测
+    function ComputeCollision(w, h, r, rx, ry) {
+        var dx = Math.min(rx, w * 0.5);
+        var dx1 = Math.max(dx, -w * 0.5);
+        var dy = Math.min(ry, h * 0.5);
+        var dy1 = Math.max(dy, -h * 0.5);
+        return (dx1 - rx) * (dx1 - rx) + (dy1 - ry) * (dy1 - ry) <= r * r;
+    }
+
+    window.onload = function () {
+        document.onmousemove = function (event) {
+            var circle = document.getElementById("circle");
+            //圆的半径
+            var radius = circle.clientWidth / 2;
+            //圆心坐标
+            var radiusPosX = parseInt((event.clientX || event.x));
+            var radiusPosY = parseInt((event.clientY || event.y));
+
+            event = event || window.event;
+            //让鼠标在圆心的位置
+            circle.style.left = parseInt(radiusPosX - radius) + "px";
+            circle.style.top = parseInt(radiusPosY - radius) + "px";
+
+            var rect = document.getElementById("rect");
+            //矩形的长宽
+            var rectW = rect.clientWidth;
+            var rectH = rect.clientHeight;
+            //矩形中心坐标
+            var rectPosX = parseInt(rect.offsetLeft) + rectW / 2;
+            var rectPosY = parseInt(rect.offsetTop) + rectH / 2;
+            //圆形中心与矩形中心相对坐标
+            var rx = radiusPosX - rectPosX;
+            var ry = radiusPosY - rectPosY;
+
+            //碰撞检测
+            if (ComputeCollision(rectW, rectH, radius, rx, ry)) {
+                rect.style.background = "#00F0FF";
+            }
+            else {
+                rect.style.background = "#00FF00";
+            }
+        }
+    }
+</script>
+</body>
+</html>

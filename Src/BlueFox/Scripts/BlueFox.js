@@ -18,7 +18,7 @@ var BlueFox = (function (self)
          */
         self.BFResourceContainer = new BFResourceContainerClass();
         // 每秒帧数
-        self.FPS = 30;
+        self.FPS = 60;
         // 每帧间隔时间，毫秒
         self.Interval = 1000 / self.FPS;
         self.LookAngle = Math.PI / 6;
@@ -764,31 +764,31 @@ var BlueFox = (function (self)
 
     /**
      * 创建画布上的绘制元素
-     * @param renderEntity,格式:{"CX": 100, "CY": 458, "CWidth": 96, "CHeight": 128, "SX": 0, "SY": 0, "SWidth": 96, "SHeight": 128, "ZOrder": 586, "ImageFilePath": "./Resource/Img/tree.png"}
+     * @param entity,格式:{"CX": 100, "CY": 458, "CWidth": 96, "CHeight": 128, "SX": 0, "SY": 0, "SWidth": 96, "SHeight": 128, "ZOrder": 586, "ImageFilePath": "./Resource/Img/tree.png"}
      * @return {BFRenderClass}
      * @method
      */
-    self.CreateBFRender = function (renderEntity)
+    self.CreateBFRender = function (entity)
     {
-        if (IsNullOrUndefined(renderEntity))
+        if (IsNullOrUndefined(entity))
         {
             throw '[CreateBFRender] method\'s parameter is null or undefined!';
         }
-        if (!IsObject(renderEntity))
+        if (!IsObject(entity))
         {
             throw '[CreateBFRender] method\'s parameter is not object!';
         }
         var render = new BFRenderClass();
-        render.SetImage(renderEntity.ResourceId);
-        render.SLocation.X = renderEntity.SX;
-        render.SLocation.Y = renderEntity.SY;
-        render.SSize.Width = renderEntity.SWidth;
-        render.SSize.Height = renderEntity.SHeight;
-        render.CLocation.X = renderEntity.CX;
-        render.CLocation.Y = renderEntity.CY;
-        render.CSize.Width = renderEntity.CWidth;
-        render.CSize.Height = renderEntity.CHeight;
-        render.ZOrder = renderEntity.CY + renderEntity.CHeight;
+        render.SetImage(entity.ResourceId);
+        render.SLocation.X = entity.SX;
+        render.SLocation.Y = entity.SY;
+        render.SSize.Width = entity.SWidth;
+        render.SSize.Height = entity.SHeight;
+        render.CLocation.X = entity.CX;
+        render.CLocation.Y = entity.CY;
+        render.CSize.Width = entity.CWidth;
+        render.CSize.Height = entity.CHeight;
+        render.ZOrder = entity.CY + entity.CHeight;
 
         return render;
     };
@@ -1010,6 +1010,26 @@ var BlueFox = (function (self)
 
         return new BFMovableRenderClass();
     };
+
+    self.CreateBFConflictRender = function (entity)
+    {
+        if (IsNullOrUndefined(entity))
+        {
+            throw '[CreateBFConflictRender] method\'s parameter is null or undefined!';
+        }
+        if (!IsObject(entity))
+        {
+            throw '[CreateBFConflictRender] method\'s parameter is not object!';
+        }
+        BFConflictRender.prototype = self.CreateBFMovableRender(entity);
+
+        function BFConflictRender()
+        {
+
+        }
+
+        return new BFConflictRender();
+    }
 
     self.CreateBFLayer = function (w, h)
     {
