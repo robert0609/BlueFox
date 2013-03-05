@@ -1026,36 +1026,20 @@ var BlueFox = (function (self)
     self.CreateBFBuilding = function (buildingEntity)
     {
         //继承基本绘图单元
-        BFBuildingClass.prototype = new BFRenderClass();
+        BFBuildingClass.prototype = self.CreateBFMovableRender(buildingEntity);
 
         /**
          * 地图上的阻碍物(建筑等)
          * @param buildingEntity: 阻碍物的数据实体
          * @constructor
          */
-        function BFBuildingClass(buildingEntity)
+        function BFBuildingClass()
         {
-            this.SLocation.X = buildingEntity.SX;
-            this.SLocation.Y = buildingEntity.SY;
-            this.SSize.Width = buildingEntity.SWidth;
-            this.SSize.Height = buildingEntity.SHeight;
-            this.CLocation.X = buildingEntity.CX;
-            this.CLocation.Y = buildingEntity.CY;
-            this.CSize.Width = buildingEntity.CWidth;
-            this.CSize.Height = buildingEntity.CHeight;
-            this.ZOrder = buildingEntity.CY + buildingEntity.CHeight;
-
-            this.OnUpdate = function ()
-            {
-            };
-
             this.Foundation = new BFFoundationClass();
             this.Foundation.BaseLocation = this.CLocation;
             this.Foundation.AddCell(new BFFoundationCellClass(10, 50));
             this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
             this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
-
-            this.SetImage(buildingEntity.ResourceId);
         }
 
         function BFFoundationClass()
@@ -1080,7 +1064,7 @@ var BlueFox = (function (self)
             this.FSize = new BFSizeClass(self.FoundationCellWidth, self.FoundationCellHeight);
         }
 
-        return new BFBuildingClass(buildingEntity);
+        return new BFBuildingClass();
     };
 
     self.Run = function ()
