@@ -25,7 +25,7 @@ function Load()
 
         var BFCanvas = BlueFox.CreateBFCanvas(bodyWidth, bodyHeight);
 
-        var layer1 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
+        var layer1 = BlueFox.CreateBFTransformLayer(bodyWidth, bodyHeight);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
@@ -34,7 +34,8 @@ function Load()
         BFCanvas.AddLayer(layer2);
         BFCanvas.AddLayer(layer1);
 
-        layer1.Scale(BlueFox.LookAngle);
+        layer1.Scale(1, 0.5);
+        layer1.Transform();
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {
             var mapCell = BlueFox.CreateBFRender(mapList[mapCellIdx]);

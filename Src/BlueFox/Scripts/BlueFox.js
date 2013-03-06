@@ -21,7 +21,6 @@ var BlueFox = (function (self)
         self.FPS = 60;
         // 每帧间隔时间，毫秒
         self.Interval = 1000 / self.FPS;
-        self.LookAngle = Math.PI / 6;
         self.FoundationCellWidth = 16;
         self.FoundationCellHeight = 16;
         // 全局画布
@@ -418,8 +417,6 @@ var BlueFox = (function (self)
 
         this.ParentCanvas = null;
 
-        var _scaleY = 1;
-
         // 该字段缓存当前图层中高度最大的元素的高度值，用以辅助判断鼠标点击在哪个元素上
         this.RenderHeightMax = 0;
 
@@ -427,12 +424,6 @@ var BlueFox = (function (self)
         _layerCanvas.width = w;
         _layerCanvas.height = h;
         var _context = _layerCanvas.getContext('2d');
-
-        this.Scale = function (angle)
-        {
-            _scaleY = Math.sin(angle);
-            _context.scale(1, _scaleY);
-        };
 
         this.StrokeStyle = function (color)
         {
@@ -469,6 +460,11 @@ var BlueFox = (function (self)
         this.LayerCanvas = function ()
         {
             return _layerCanvas;
+        };
+
+        this.LayerContext = function ()
+        {
+            return _context;
         };
 
         this.AddRender = function (render)
@@ -1024,14 +1020,14 @@ var BlueFox = (function (self)
         {
             throw '[CreateBFConflictRender] method\'s parameter is not object!';
         }
-        BFConflictRender.prototype = self.CreateBFMovableRender(entity);
+        BFConflictRenderClass.prototype = self.CreateBFMovableRender(entity);
 
-        function BFConflictRender()
+        function BFConflictRenderClass()
         {
 
         }
 
-        return new BFConflictRender();
+        return new BFConflictRenderClass();
     }
 
     self.CreateBFLayer = function (w, h)
@@ -1039,9 +1035,59 @@ var BlueFox = (function (self)
         return new BFLayerClass(w, h);
     };
 
-    self.CreateBFScaleLayer = function (w, h)
+    self.CreateBFTransformLayer = function (w, h)
     {
+        BFTransformLayerClass.prototype = self.CreateBFLayer(w, h);
 
+        function BFTransformLayerClass()
+        {
+            var _context = this.LayerContext();
+
+            var _transformCache = [ [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0] ];
+
+            this.Scale = function (sx, sy)
+            {
+                var a = _transformCache[0];
+                a[0] = sx;
+                a[3] = sy;
+            };
+
+            this.Rotate = function (angle)
+            {
+                var a = _transformCache[1];
+                var sin = Math.sin(angle);
+                var cos = Math.cos(angle);
+                a[0] = cos;
+                a[1] = sin;
+                a[2] = 0 - sin;
+                a[3] = cos;
+            };
+
+            this.Translate = function (x, y)
+            {
+                var a = _transformCache[2];
+                a[4] = x;
+                a[5] = y;
+            };
+
+            this.Transform = function ()
+            {
+                _context.setTransform(1, 0, 0, 1, 0, 0);
+                var a = null;
+                for (var i = 0; i < _transformCache.length; ++i)
+                {
+                    a = _transformCache[i];
+                    _context.transform(a[0], a[1], a[2], a[3], a[4], a[5]);
+                }
+            }
+
+            this.ConvertScreenLocation = function (x, y)
+            {
+                // TODO:矩阵逆变换运算，由屏幕坐标计算出地图坐标
+            }
+        }
+
+        return new BFTransformLayerClass();
     };
 
     self.CreateBFCanvas = function (w, h)

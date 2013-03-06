@@ -17,19 +17,25 @@
 //            ctx.font = '20px Lucida Console';
 //            ctx.strokeRect(0, 0, 500, 400);
 //            ctx.fillText('test', 100, 100);
-//            var canvas = document.createElement('canvas');
-//            canvas.width = 500;
-//            canvas.height = 400;
-//            canvas.innerHTML = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /><p style="margin-top: 0px; margin-bottom: 0px; font-family: Lucida Console; font-size: 10px; font-weight: bold;">test</p></td></tr></table>';
-//            canvas.onmousemove = function (e)
-//            {
-//                alert('test');
-//                canvas.onmousemove = null;
-//            };
-//            document.body.appendChild(canvas);
 
-            debugger;
-            CallFunction(FindLessOrEqual, 1000);
+
+            var canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 400;
+            var ctx = canvas.getContext('2d');
+            ctx.scale(1, 0.5);
+            ctx.rotate(Math.PI / 4);
+            //ctx.transform(1, 0, 0, 0.5, 0, 0);
+            //ctx.transform(Math.cos(Math.PI / 4), Math.sin(Math.PI / 4), 0 - Math.sin(Math.PI / 4), Math.cos(Math.PI / 4), 0, 0);
+            //ctx.transform(Math.cos(Math.PI / 4) * 1, Math.sin(Math.PI / 4) * 0.5, 0 - Math.sin(Math.PI / 4) * 1, Math.cos(Math.PI / 4) * 0.5, 0, 0);
+            ctx.translate(100, 0);
+            ctx.beginPath();
+            ctx.rect(0, 0, 100, 100);
+            ctx.clip();
+            ctx.fillRect(0, 0, 100, 100);
+            document.body.appendChild(canvas);
+
+            //CallFunction(FindLessOrEqual, 1000);
         }
 
         function CallFunction(func, args)
@@ -83,6 +89,7 @@
 <!--<h1 name="txt1" onclick="getValue()">这是标题</h1>-->
 <p>点击标题，会提示出它的值。</p>
 <script type="text/javascript">
+
 </script>
 
 </body>
