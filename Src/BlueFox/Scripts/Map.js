@@ -35,6 +35,7 @@ function Load()
         BFCanvas.AddLayer(layer1);
 
         layer1.Scale(1, 0.5);
+        layer1.Rotate(Math.PI / 4);
         layer1.Transform();
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {

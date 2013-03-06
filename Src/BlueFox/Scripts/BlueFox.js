@@ -1045,6 +1045,8 @@ var BlueFox = (function (self)
 
             var _transformCache = [ [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0] ];
 
+            var _matrix = [1, 0, 0, 1, 0, 0];
+
             this.Scale = function (sx, sy)
             {
                 var a = _transformCache[0];
@@ -1073,17 +1075,43 @@ var BlueFox = (function (self)
             this.Transform = function ()
             {
                 _context.setTransform(1, 0, 0, 1, 0, 0);
+                var m = [1, 0, 0, 1, 0, 0];
                 var a = null;
                 for (var i = 0; i < _transformCache.length; ++i)
                 {
                     a = _transformCache[i];
                     _context.transform(a[0], a[1], a[2], a[3], a[4], a[5]);
+                    m = MatrixMultiply(m, a);
                 }
+
+                _matrix = m;
+            }
+
+            function MatrixMultiply(m, n)
+            {
+                var a = m[0] * n[0] + m[2] * n[1];
+                var b = m[1] * n[0] + m[3] * n[1];
+                var c = m[0] * n[2] + m[2] * n[3];
+                var d = m[1] * n[2] + m[3] * n[3];
+                var e = m[0] * n[4] + m[2] * n[5] + m[4];
+                var f = m[1] * n[4] + m[3] * n[5] + m[5];
+                return [a, b, c, d, e, f];
             }
 
             this.ConvertScreenLocation = function (x, y)
             {
-                // TODO:矩阵逆变换运算，由屏幕坐标计算出地图坐标
+                // 矩阵逆变换运算，由屏幕坐标计算出地图坐标
+                var a = _matrix[0];
+                var b = _matrix[1];
+                var c = _matrix[2];
+                var d = _matrix[3];
+                var e = _matrix[4];
+                var f = _matrix[5];
+
+                var x1 = (d * (x - e) - c * (y - f)) / (a * d - b * c);
+                var y1 = (a * (y - f) - b * (x - e)) / (a * d - b * c);
+
+                return new BFLocationClass(x1, y1);
             }
         }
 
