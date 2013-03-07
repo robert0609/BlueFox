@@ -1086,7 +1086,7 @@ var BlueFox = (function (self)
                 }
 
                 _matrix = m;
-            }
+            };
 
             function MatrixMultiply(m, n)
             {
@@ -1113,7 +1113,13 @@ var BlueFox = (function (self)
                 var y1 = (a * (y - f) - b * (x - e)) / (a * d - b * c);
 
                 return new BFLocationClass(x1, y1);
-            }
+            };
+
+            this.FindRender = function (x, y)
+            {
+                var loc = this.ConvertScreenLocation(x, y);
+
+            };
         }
 
         return new BFTransformLayerClass();

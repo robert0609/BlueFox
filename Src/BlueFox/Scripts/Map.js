@@ -27,7 +27,7 @@ function Load()
 
         var layer1 = BlueFox.CreateBFTransformLayer(bodyWidth, bodyHeight);
         layer1.Index = 0;
-        layer1.AutoStopRefresh = true;
+        //layer1.AutoStopRefresh = true;
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer2.Index = 1;
         layer2.StrokeStyle('orange');
