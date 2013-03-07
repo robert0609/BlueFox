@@ -566,6 +566,7 @@ var BlueFox = (function (self)
             // 获取当前时刻
             var dt1 = (new Date()).getTime();
 
+            _bufferContext.clearRect(0, 0, w, h);
             _layerList = _layerList.sort(function (a, b)
             {
                 return a.Index - b.Index;
