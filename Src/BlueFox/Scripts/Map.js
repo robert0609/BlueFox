@@ -27,7 +27,7 @@ function Load()
 
         var layer1 = BlueFox.CreateBFTransformLayer(bodyWidth, bodyHeight);
         layer1.Index = 0;
-        //layer1.AutoStopRefresh = true;
+        layer1.AutoStopRefresh = true;
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer2.Index = 1;
         layer2.StrokeStyle('orange');
@@ -36,6 +36,7 @@ function Load()
 
         layer1.Scale(1, 0.5);
         layer1.Rotate(Math.PI / 4);
+        layer1.Translate(400, -600);
         layer1.Transform();
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {

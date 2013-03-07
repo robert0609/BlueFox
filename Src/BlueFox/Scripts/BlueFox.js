@@ -462,6 +462,11 @@ var BlueFox = (function (self)
             return _layerCanvas;
         };
 
+        this.RenderList = function ()
+        {
+            return _renderList;
+        }
+
         this.LayerContext = function ()
         {
             return _context;
@@ -477,7 +482,7 @@ var BlueFox = (function (self)
         {
             var ret = null;
             var render = null;
-            var start = FindLessOrEqual(y + this.RenderHeightMax);
+            var start = this.FindLessOrEqual(y + this.RenderHeightMax);
             for (var i = start; i > -1; --i)
             {
                 render = _renderList[i];
@@ -495,7 +500,7 @@ var BlueFox = (function (self)
          * @param z
          * @method
          */
-        function FindLessOrEqual(z)
+        this.FindLessOrEqual = function (z)
         {
             var first = 0;
             var last = _renderList.length - 1;
@@ -530,7 +535,7 @@ var BlueFox = (function (self)
             }
 
             return middle;
-        }
+        };
     }
 
     /**
@@ -1118,7 +1123,21 @@ var BlueFox = (function (self)
             this.FindRender = function (x, y)
             {
                 var loc = this.ConvertScreenLocation(x, y);
-
+                x = loc.X;
+                y = loc.Y;
+                var ret = null;
+                var render = null;
+                var start = this.FindLessOrEqual(y + this.RenderHeightMax);
+                for (var i = start; i > -1; --i)
+                {
+                    render = this.RenderList()[i];
+                    if (render.Contains(x, y))
+                    {
+                        ret = render;
+                        break;
+                    }
+                }
+                return ret;
             };
         }
 
