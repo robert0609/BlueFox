@@ -798,32 +798,71 @@ var BlueFox = (function (self)
         return render;
     };
 
-    self.CreateBFMovableRender = function (renderOrEntity)
+    self.CreateBFFoundationRender = function (entity)
     {
-        if (IsNullOrUndefined(renderOrEntity))
+        if (IsNullOrUndefined(entity))
+        {
+            throw '[CreateBFFoundationRender] method\'s parameter is null or undefined!';
+        }
+        if (!IsObject(entity))
+        {
+            throw '[CreateBFFoundationRender] method\'s parameter is not object!';
+        }
+        BFFoundationRenderClass.prototype = self.CreateBFRender(entity);
+
+        function BFFoundationRenderClass()
+        {
+            this.Center2CLocation = function (xOry, val)
+            {
+                var ret = 0;
+                if (xOry == 'x')
+                {
+                    ret = val - Math.floor(this.CSize.Width / 2);
+                }
+                else if (xOry == 'y')
+                {
+                    ret = val - this.CSize.Height;
+                }
+                return ret;
+            };
+
+            this.CLocation2Center = function (xOry, val)
+            {
+                var ret = 0;
+                if (xOry == 'x')
+                {
+                    ret = val + Math.floor(this.CSize.Width / 2);
+                }
+                else if (xOry == 'y')
+                {
+                    ret = val + this.CSize.Height;
+                }
+                return ret;
+            };
+
+            // 元素移动的基准位置坐标
+            this.CenterLocation = new BFLocationClass(this.CLocation2Center('x', this.CLocation.X), this.CLocation2Center('y', this.CLocation.Y));
+
+        }
+
+        return new BFFoundationRenderClass();
+    };
+
+    self.CreateBFMovableRender = function (entity)
+    {
+        if (IsNullOrUndefined(entity))
         {
             throw '[CreateBFMovableRender] method\'s parameter is null or undefined!';
         }
-        if (!IsObject(renderOrEntity))
+        if (!IsObject(entity))
         {
             throw '[CreateBFMovableRender] method\'s parameter is not object!';
         }
-        if (renderOrEntity instanceof BFRenderClass)
-        {
-            //继承基本绘图单元
-            BFMovableRenderClass.prototype = renderOrEntity;
-        }
-        else
-        {
-            //继承基本绘图单元
-            BFMovableRenderClass.prototype = self.CreateBFRender(renderOrEntity);
-        }
+        //继承基本绘图单元
+        BFMovableRenderClass.prototype = self.CreateBFFoundationRender(entity);
 
         function BFMovableRenderClass()
         {
-            // 元素移动的基准位置坐标
-            this.CenterLocation = new BFLocationClass(this.CLocation.X + Math.floor(this.CSize.Width / 2), this.CLocation.Y + this.CSize.Height);
-
             // 移动目标坐标
             var _targetX = 0;
             var _targetY = 0;
@@ -971,7 +1010,7 @@ var BlueFox = (function (self)
                     this.CenterLocation.X = tx;
                     this.DirectionX = 0;
                 }
-                this.CLocation.X = this.CenterLocation.X - Math.floor(this.CSize.Width / 2);
+                this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
 
                 this.CenterLocation.Y += this.DirectionY * this.Speed;
                 by = this.CheckExceedY();
@@ -980,7 +1019,7 @@ var BlueFox = (function (self)
                     this.CenterLocation.Y = ty;
                     this.DirectionY = 0;
                 }
-                this.CLocation.Y = this.CenterLocation.Y - this.CSize.Height;
+                this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
 
                 this.ZOrder = this.CLocation.Y + this.CSize.Height;
 
@@ -1272,8 +1311,8 @@ var BlueFox = (function (self)
                 self.DragedRender.CenterLocation.Y += (clickY - self.DragedRender.MouseDownLocation.Y);
                 self.DragedRender.MouseDownLocation.X = clickX;
                 self.DragedRender.MouseDownLocation.Y = clickY;
-                self.DragedRender.CLocation.X = self.DragedRender.CenterLocation.X - Math.floor(self.DragedRender.CSize.Width / 2);
-                self.DragedRender.CLocation.Y = self.DragedRender.CenterLocation.Y - self.DragedRender.CSize.Height;
+                self.DragedRender.CLocation.X = self.DragedRender.Center2CLocation('x', self.DragedRender.CenterLocation.X);
+                self.DragedRender.CLocation.Y = self.DragedRender.Center2CLocation('y', self.DragedRender.CenterLocation.Y);
                 self.DragedRender.ZOrder = self.DragedRender.CLocation.Y + self.DragedRender.CSize.Height;
             }
             CancelEventFlow(e);
