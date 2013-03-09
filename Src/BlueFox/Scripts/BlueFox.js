@@ -387,9 +387,12 @@ var BlueFox = (function (self)
             }
             this.Select();
             self.SelectRender = this;
-            self.DragedRender = this;
-            this.MouseDownLocation.X = e.ClickX;
-            this.MouseDownLocation.Y = e.ClickY;
+            if (this.CanDrag)
+            {
+                self.DragedRender = this;
+                this.MouseDownLocation.X = e.ClickX;
+                this.MouseDownLocation.Y = e.ClickY;
+            }
         };
 
         this.OnRightMouseDown = function (e)
@@ -747,6 +750,28 @@ var BlueFox = (function (self)
         }
     }
 
+    /**
+     * 元素的地基类
+     * @param foundation
+     * @constructor
+     */
+    function BFFoundationClass(foundation)
+    {
+        this.Flag = foundation.flag;
+        this.Radius = 0;
+        this.Width = 0;
+        this.Height = 0;
+        if (this.Flag == 'circle')
+        {
+            this.Radius = foundation.Radius;
+        }
+        else if (this.Flag == 'rectangle')
+        {
+            this.Width = foundation.Width;
+            this.Height = foundation.Height;
+        }
+    }
+
     /* BlueFox.World Begin */
     function IsNullOrUndefined(obj)
     {
@@ -812,6 +837,8 @@ var BlueFox = (function (self)
 
         function BFFoundationRenderClass()
         {
+            this.CanDrag = true;
+
             this.Center2CLocation = function (xOry, val)
             {
                 var ret = 0;
@@ -843,6 +870,96 @@ var BlueFox = (function (self)
             // 元素移动的基准位置坐标
             this.CenterLocation = new BFLocationClass(this.CLocation2Center('x', this.CLocation.X), this.CLocation2Center('y', this.CLocation.Y));
 
+            // 元素的地基，用以碰撞检测 TODO
+            this.Foundation = new BFFoundationClass(entity.Foundation);
+            this.FoundationCenter = null;
+            var _mapLayer = null;
+            this.Cast2Map = function (mapLayer)
+            {
+                if (!IsNullOrUndefined(mapLayer))
+                {
+                    _mapLayer = mapLayer;
+                }
+                if (!IsNullOrUndefined(_mapLayer))
+                {
+                    if (_mapLayer.CanTransform)
+                    {
+                        this.FoundationCenter = _mapLayer.ConvertScreenLocation(this.CenterLocation.X, this.CenterLocation.Y);
+                    }
+                    else
+                    {
+                        this.FoundationCenter = this.CenterLocation;
+                    }
+                }
+            }
+
+            this.CheckConflict = function (foundationRender)
+            {
+                if (this.FoundationCenter == null || !foundationRender.FoundationCenter || foundationRender.FoundationCenter == null)
+                {
+                    return false;
+                }
+
+                var ret = false;
+                var r = 0;
+                var w = 0;
+                var h = 0;
+                var circleO = null;
+                var rectO = null;
+                if (this.Foundation.Flag == 'circle' && foundationRender.Foundation.Flag == 'circle')
+                {
+                    ret = ComputeCollisionCC(this.Foundation.Radius, foundationRender.Foundation.Radius, this.FoundationCenter.X - foundationRender.FoundationCenter.X, this.FoundationCenter.Y - foundationRender.FoundationCenter.Y);
+                }
+                else if (this.Foundation.Flag == 'rectangle' && foundationRender.Foundation.Flag == 'rectangle')
+                {
+
+                }
+                else
+                {
+                    if (this.Foundation.Flag == 'circle')
+                    {
+                        ret = ComputeCollisionCR(foundationRender.Foundation.Width, foundationRender.Foundation.Height, this.Foundation.Radius, this.FoundationCenter.X - foundationRender.FoundationCenter.X, this.FoundationCenter.Y - foundationRender.FoundationCenter.Y);
+                    }
+                    else
+                    {
+                        ret = ComputeCollisionCR(this.Foundation.Width, this.Foundation.Height, foundationRender.Foundation.Radius, foundationRender.FoundationCenter.X - this.FoundationCenter.X, foundationRender.FoundationCenter.Y - this.FoundationCenter.Y);
+                    }
+                }
+                return ret;
+            };
+
+            /**
+             * 检测圆形和矩形是否碰撞
+             * @param w 矩形长度
+             * @param h 矩形宽度
+             * @param r 圆形半径
+             * @param rx 圆形中心与矩形中心相对坐标
+             * @param ry 圆形中心与矩形中心相对坐标
+             * @return {Boolean}
+             * @method
+             */
+            function ComputeCollisionCR(w, h, r, rx, ry)
+            {
+                var dx = Math.min(rx, w * 0.5);
+                var dx1 = Math.max(dx, -w * 0.5);
+                var dy = Math.min(ry, h * 0.5);
+                var dy1 = Math.max(dy, -h * 0.5);
+                return (dx1 - rx) * (dx1 - rx) + (dy1 - ry) * (dy1 - ry) <= r * r;
+            }
+
+            /**
+             * 检测圆形和圆形是否碰撞
+             * @param r1 圆形1半径
+             * @param r2 圆形2半径
+             * @param rx 两个圆形圆心x坐标之间距离的绝对值
+             * @param ry 两个圆形圆心y坐标之间距离的绝对值
+             * @return {Boolean}
+             * @method
+             */
+            function ComputeCollisionCC(r1, r2, rx, ry)
+            {
+                return rx * rx + ry * ry <= (r1 + r2) * (r1 + r2);
+            }
         }
 
         return new BFFoundationRenderClass();
@@ -1023,6 +1140,8 @@ var BlueFox = (function (self)
 
                 this.ZOrder = this.CLocation.Y + this.CSize.Height;
 
+                this.Cast2Map();
+
                 if (bx && by)
                 {
                     this.Speed = 0;
@@ -1055,26 +1174,6 @@ var BlueFox = (function (self)
         return new BFMovableRenderClass();
     };
 
-    self.CreateBFConflictRender = function (entity)
-    {
-        if (IsNullOrUndefined(entity))
-        {
-            throw '[CreateBFConflictRender] method\'s parameter is null or undefined!';
-        }
-        if (!IsObject(entity))
-        {
-            throw '[CreateBFConflictRender] method\'s parameter is not object!';
-        }
-        BFConflictRenderClass.prototype = self.CreateBFMovableRender(entity);
-
-        function BFConflictRenderClass()
-        {
-
-        }
-
-        return new BFConflictRenderClass();
-    }
-
     self.CreateBFLayer = function (w, h)
     {
         return new BFLayerClass(w, h);
@@ -1086,6 +1185,8 @@ var BlueFox = (function (self)
 
         function BFTransformLayerClass()
         {
+            this.CanTransform = true;
+
             var _context = this.LayerContext();
 
             var _transformCache = [ [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0] ];
@@ -1190,50 +1291,6 @@ var BlueFox = (function (self)
     };
     /* BlueFox.World End */
 
-    self.CreateBFBuilding = function (buildingEntity)
-    {
-        //继承基本绘图单元
-        BFBuildingClass.prototype = self.CreateBFMovableRender(buildingEntity);
-
-        /**
-         * 地图上的阻碍物(建筑等)
-         * @param buildingEntity: 阻碍物的数据实体
-         * @constructor
-         */
-        function BFBuildingClass()
-        {
-            this.Foundation = new BFFoundationClass();
-            this.Foundation.BaseLocation = this.CLocation;
-            this.Foundation.AddCell(new BFFoundationCellClass(10, 50));
-            this.Foundation.AddCell(new BFFoundationCellClass(20, 50));
-            this.Foundation.AddCell(new BFFoundationCellClass(15, 60));
-        }
-
-        function BFFoundationClass()
-        {
-            this.BaseLocation = new BFLocationClass(0, 0);
-            this.CellList = new Array();
-
-            this.AddCell = function (foundationCell)
-            {
-                this.CellList.push(foundationCell);
-            };
-
-            this.CheckConflict = function ()
-            {
-
-            };
-        }
-
-        function BFFoundationCellClass(x, y)
-        {
-            this.FLocation = new BFLocationClass(x, y);
-            this.FSize = new BFSizeClass(self.FoundationCellWidth, self.FoundationCellHeight);
-        }
-
-        return new BFBuildingClass();
-    };
-
     self.Run = function ()
     {
         try
@@ -1309,6 +1366,7 @@ var BlueFox = (function (self)
             {
                 self.DragedRender.CenterLocation.X += (clickX - self.DragedRender.MouseDownLocation.X);
                 self.DragedRender.CenterLocation.Y += (clickY - self.DragedRender.MouseDownLocation.Y);
+                self.DragedRender.Cast2Map();
                 self.DragedRender.MouseDownLocation.X = clickX;
                 self.DragedRender.MouseDownLocation.Y = clickY;
                 self.DragedRender.CLocation.X = self.DragedRender.Center2CLocation('x', self.DragedRender.CenterLocation.X);
