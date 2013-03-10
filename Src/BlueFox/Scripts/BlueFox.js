@@ -758,9 +758,13 @@ var BlueFox = (function (self)
     function BFFoundationClass(foundation)
     {
         this.Flag = foundation.flag;
+
         this.Radius = 0;
+
         this.Width = 0;
         this.Height = 0;
+        this.KW = 0
+        this.KH = 0;
         if (this.Flag == 'circle')
         {
             this.Radius = foundation.Radius;
@@ -769,6 +773,8 @@ var BlueFox = (function (self)
         {
             this.Width = foundation.Width;
             this.Height = foundation.Height;
+            this.KW = foundation.KW;
+            this.KH = foundation.KH;
         }
     }
 
@@ -901,11 +907,6 @@ var BlueFox = (function (self)
                 }
 
                 var ret = false;
-                var r = 0;
-                var w = 0;
-                var h = 0;
-                var circleO = null;
-                var rectO = null;
                 if (this.Foundation.Flag == 'circle' && foundationRender.Foundation.Flag == 'circle')
                 {
                     ret = ComputeCollisionCC(this.Foundation.Radius, foundationRender.Foundation.Radius, this.FoundationCenter.X - foundationRender.FoundationCenter.X, this.FoundationCenter.Y - foundationRender.FoundationCenter.Y);
@@ -959,6 +960,15 @@ var BlueFox = (function (self)
             function ComputeCollisionCC(r1, r2, rx, ry)
             {
                 return rx * rx + ry * ry <= (r1 + r2) * (r1 + r2);
+            }
+
+            /**
+             *
+             * @method
+             */
+            function ComputeCollisionRR(a1, b1, w1, h1, a2, b2, w2, h2)
+            {
+
             }
         }
 
