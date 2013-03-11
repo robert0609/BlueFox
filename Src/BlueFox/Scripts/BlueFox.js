@@ -941,7 +941,7 @@ var BlueFox = (function (self)
                 }
                 else if (this.Foundation.Flag == 'rectangle' && foundationRender.Foundation.Flag == 'rectangle')
                 {
-
+                    ret = ComputeCollisionRR(this.Foundation, foundationRender.Foundation);
                 }
                 else
                 {
@@ -1005,7 +1005,7 @@ var BlueFox = (function (self)
                  * @param k 斜率
                  * @param points 判断的点列表
                  * @return {Boolean} True:在之间; False:之外
-                 * @constructor
+                 * @method
                  */
                 function Check(oPoint, ePoint, k, points)
                 {
@@ -1077,6 +1077,24 @@ var BlueFox = (function (self)
                     }
                     return finalRet;
                 }
+
+                if (!check(fd1.RectPoints[0][0], fd1.RectPoints[0][1], fd1.KW, fd2.RectPoints))
+                {
+                    return false;
+                }
+                if (!check(fd1.RectPoints[0][0], fd1.RectPoints[1][0], fd1.KH, fd2.RectPoints))
+                {
+                    return false;
+                }
+                if (!check(fd2.RectPoints[0][0], fd2.RectPoints[0][1], fd2.KW, fd1.RectPoints))
+                {
+                    return false;
+                }
+                if (!check(fd2.RectPoints[0][0], fd2.RectPoints[1][0], fd2.KH, fd1.RectPoints))
+                {
+                    return false;
+                }
+                return true;
             }
         }
 
