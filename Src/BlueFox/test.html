@@ -9,6 +9,11 @@
             alert(x.value)
         }
 
+        function Load1()
+        {
+            alert(-1 / 0);
+        }
+
         function Load()
         {
 //            var ctx = document.getElementById('can').getContext('2d');
@@ -83,7 +88,7 @@
         }
     </script>
 </head>
-<body onload="Load()">
+<body onload="Load1()">
 
 <input type="text" name="txt1" value="这是标题" onclick="getValue()" />
 <!--<h1 name="txt1" onclick="getValue()">这是标题</h1>-->

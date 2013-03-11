@@ -758,12 +758,14 @@ var BlueFox = (function (self)
     function BFFoundationClass(foundation)
     {
         this.Flag = foundation.flag;
+        this.Center = new BFLocationClass(0, 0);
 
         this.Radius = 0;
 
+        this.RectPoints = [[ new BFLocationClass(0, 0), new BFLocationClass(0, 0) ], [ new BFLocationClass(0, 0), new BFLocationClass(0, 0) ]];
         this.Width = 0;
         this.Height = 0;
-        this.KW = 0
+        this.KW = 0;
         this.KH = 0;
         if (this.Flag == 'circle')
         {
@@ -771,11 +773,36 @@ var BlueFox = (function (self)
         }
         else if (this.Flag == 'rectangle')
         {
-            this.Width = foundation.Width;
-            this.Height = foundation.Height;
-            this.KW = foundation.KW;
-            this.KH = foundation.KH;
+            this.RectPoints[0][0].X = foundation.RectPoints[0][0].X;
+            this.RectPoints[0][0].Y = foundation.RectPoints[0][0].Y;
+            this.RectPoints[0][1].X = foundation.RectPoints[0][1].X;
+            this.RectPoints[0][1].Y = foundation.RectPoints[0][1].Y;
+            this.RectPoints[1][0].X = foundation.RectPoints[1][0].X;
+            this.RectPoints[1][0].Y = foundation.RectPoints[1][0].Y;
+            this.RectPoints[1][1].X = foundation.RectPoints[1][1].X;
+            this.RectPoints[1][1].Y = foundation.RectPoints[1][1].Y;
+            this.Width = Math.sqrt(Math.pow((this.RectPoints[0][0].X - this.RectPoints[0][1].X), 2) + Math.pow((this.RectPoints[0][0].Y - this.RectPoints[0][1].Y), 2));
+            this.Height = Math.sqrt(Math.pow((this.RectPoints[0][0].X - this.RectPoints[1][0].X), 2) + Math.pow((this.RectPoints[0][0].Y - this.RectPoints[1][0].Y), 2));
+            this.KW = (this.RectPoints[0][0].Y - this.RectPoints[0][1].Y) / (this.RectPoints[0][0].X - this.RectPoints[0][1].X);
+            this.KH = (this.RectPoints[0][0].Y - this.RectPoints[1][0].Y) / (this.RectPoints[0][0].X - this.RectPoints[1][0].X);
         }
+
+        this.SetCenter = function (x, y)
+        {
+            this.Center.X = x;
+            this.Center.Y = y;
+            var i, j;
+            for (i = 0; i < this.RectPoints.length; ++i)
+            {
+                var list = this.RectPoints[i];
+                for (j = 0; j < list.length; ++j)
+                {
+                    var p = list[j];
+                    p.X = p.X + this.Center.X;
+                    p.Y = p.Y + this.Center.Y;
+                }
+            }
+        };
     }
 
     /* BlueFox.World Begin */
@@ -896,6 +923,7 @@ var BlueFox = (function (self)
                     {
                         this.FoundationCenter = this.CenterLocation;
                     }
+                    this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
                 }
             }
 
@@ -963,12 +991,92 @@ var BlueFox = (function (self)
             }
 
             /**
-             *
+             * 检测矩形和矩形是否碰撞
+             * @param fd1 矩形1(地基类)
+             * @param fd2 矩形2(地基类)
              * @method
              */
-            function ComputeCollisionRR(a1, b1, w1, h1, a2, b2, w2, h2)
+            function ComputeCollisionRR(fd1, fd2)
             {
+                /**
+                 * 判断points中的点在斜率k，起点为oPoint，终点为ePoint的向量上的投影是否在起点和终点之间
+                 * @param oPoint 起点
+                 * @param ePoint 终点
+                 * @param k 斜率
+                 * @param points 判断的点列表
+                 * @return {Boolean} True:在之间; False:之外
+                 * @constructor
+                 */
+                function Check(oPoint, ePoint, k, points)
+                {
+                    var finalRet = false;
 
+                    var a = oPoint.X;
+                    var b = oPoint.Y;
+                    var m, n, x, y;
+                    var min, max;
+                    if (k == Infinity || k == -Infinity)
+                    {
+                        min = Math.min(oPoint.Y, ePoint.Y);
+                        max = Math.max(oPoint.Y, ePoint.Y);
+                    }
+                    else
+                    {
+                        min = Math.min(oPoint.X, ePoint.X);
+                        max = Math.max(oPoint.X, ePoint.X);
+                    }
+
+                    var chkRet;
+                    var chkVal;
+                    for (var i = 0; i < points.length; ++i)
+                    {
+                        var row = points[i];
+                        for (var j = 0; j < row.length; ++j)
+                        {
+                            var point = row[j];
+                            m = point.X;
+                            n = point.Y;
+
+                            if (k == Infinity || k == -Infinity)
+                            {
+                                chkVal = n;
+                            }
+                            else
+                            {
+                                chkVal = (a * k * k + (n - b) * k + m) / (k * k + 1);
+                            }
+                            if (chkVal > max)
+                            {
+                                if (chkRet != undefined && chkRet != 1)
+                                {
+                                    finalRet = true;
+                                    break;
+                                }
+                                chkRet = 1;
+                            }
+                            else if (chkVal < min)
+                            {
+                                if (chkRet != undefined && chkRet != -1)
+                                {
+                                    finalRet = true;
+                                    break;
+                                }
+                                chkRet = -1;
+                            }
+                            else
+                            {
+                                chkRet = 0;
+                                finalRet = true;
+                                break;
+                            }
+                        }
+                        if (finalRet)
+                        {
+                            break;
+                        }
+                    }
+                    return finalRet;
+                }
             }
         }
 
