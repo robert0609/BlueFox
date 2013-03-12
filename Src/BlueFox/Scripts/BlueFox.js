@@ -623,7 +623,7 @@ var BlueFox = (function (self)
 
             this.GetIndex = function (foundationRender)
             {
-
+                var idx = -1;
             };
 
             this.Insert = function ()
