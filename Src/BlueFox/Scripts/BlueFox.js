@@ -1025,6 +1025,12 @@ var BlueFox = (function (self)
                  */
                 function Check(oPoint, ePoint, k, points)
                 {
+                    /**
+                     * 计算点(m, n)在起点为(a, b)的斜率为k的向量上的投影点的公式:
+                     * x = (a * k * k + (n - b) * k + m) / (k * k + 1)
+                     * y = (n * k * k + (m - a) * k + b) / (k * k + 1)
+                     */
+
                     var finalRet = false;
 
                     var a = oPoint.X;
