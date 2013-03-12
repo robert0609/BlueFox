@@ -807,7 +807,6 @@ var BlueFox = (function (self)
         };
     }
 
-    /* BlueFox.World Begin */
     function IsNullOrUndefined(obj)
     {
         if (obj == null || obj == undefined)
@@ -1450,7 +1449,6 @@ var BlueFox = (function (self)
         self.GlobalBFCanvas = new BFCanvasClass(w, h);
         return self.GlobalBFCanvas;
     };
-    /* BlueFox.World End */
 
     self.Run = function ()
     {
