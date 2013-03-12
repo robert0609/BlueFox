@@ -773,6 +773,7 @@ var BlueFox = (function (self)
         }
         else if (this.Flag == 'rectangle')
         {
+            // 初始化矩形的四个顶点坐标，该坐标是假设矩形中心坐标为(0, 0)的情况下，相对的坐标
             this.RectPoints[0][0].X = foundation.RectPoints[0][0].X;
             this.RectPoints[0][0].Y = foundation.RectPoints[0][0].Y;
             this.RectPoints[0][1].X = foundation.RectPoints[0][1].X;
@@ -781,10 +782,11 @@ var BlueFox = (function (self)
             this.RectPoints[1][0].Y = foundation.RectPoints[1][0].Y;
             this.RectPoints[1][1].X = foundation.RectPoints[1][1].X;
             this.RectPoints[1][1].Y = foundation.RectPoints[1][1].Y;
+
             this.Width = Math.sqrt(Math.pow((this.RectPoints[0][0].X - this.RectPoints[0][1].X), 2) + Math.pow((this.RectPoints[0][0].Y - this.RectPoints[0][1].Y), 2));
             this.Height = Math.sqrt(Math.pow((this.RectPoints[0][0].X - this.RectPoints[1][0].X), 2) + Math.pow((this.RectPoints[0][0].Y - this.RectPoints[1][0].Y), 2));
-            this.KW = (this.RectPoints[0][0].Y - this.RectPoints[0][1].Y) / (this.RectPoints[0][0].X - this.RectPoints[0][1].X);
-            this.KH = (this.RectPoints[0][0].Y - this.RectPoints[1][0].Y) / (this.RectPoints[0][0].X - this.RectPoints[1][0].X);
+            this.KW = Math.round((this.RectPoints[0][0].Y - this.RectPoints[0][1].Y) / (this.RectPoints[0][0].X - this.RectPoints[0][1].X));
+            this.KH = Math.round((this.RectPoints[0][0].Y - this.RectPoints[1][0].Y) / (this.RectPoints[0][0].X - this.RectPoints[1][0].X));
         }
 
         this.SetCenter = function (x, y)
@@ -903,10 +905,17 @@ var BlueFox = (function (self)
             // 元素移动的基准位置坐标
             this.CenterLocation = new BFLocationClass(this.CLocation2Center('x', this.CLocation.X), this.CLocation2Center('y', this.CLocation.Y));
 
-            // 元素的地基，用以碰撞检测 TODO
+            // 元素的地基，用以碰撞检测
             this.Foundation = new BFFoundationClass(entity.Foundation);
+            // 地基中心坐标
             this.FoundationCenter = null;
+            // 地图图层
             var _mapLayer = null;
+            /**
+             * 将本元素的地基投影到地图图层上
+             * @param mapLayer 地图图层
+             * @method
+             */
             this.Cast2Map = function (mapLayer)
             {
                 if (!IsNullOrUndefined(mapLayer))
@@ -927,6 +936,12 @@ var BlueFox = (function (self)
                 }
             }
 
+            /**
+             * 检测与其他元素是否碰撞
+             * @param foundationRender
+             * @return {Boolean} True:有碰撞;False:无碰撞
+             * @method
+             */
             this.CheckConflict = function (foundationRender)
             {
                 if (this.FoundationCenter == null || !foundationRender.FoundationCenter || foundationRender.FoundationCenter == null)
@@ -994,6 +1009,7 @@ var BlueFox = (function (self)
              * 检测矩形和矩形是否碰撞
              * @param fd1 矩形1(地基类)
              * @param fd2 矩形2(地基类)
+             * @return {Boolean}
              * @method
              */
             function ComputeCollisionRR(fd1, fd2)
@@ -1078,21 +1094,24 @@ var BlueFox = (function (self)
                     return finalRet;
                 }
 
-                if (!check(fd1.RectPoints[0][0], fd1.RectPoints[0][1], fd1.KW, fd2.RectPoints))
+                if (!Check(fd1.RectPoints[0][0], fd1.RectPoints[0][1], fd1.KW, fd2.RectPoints))
                 {
                     return false;
                 }
-                if (!check(fd1.RectPoints[0][0], fd1.RectPoints[1][0], fd1.KH, fd2.RectPoints))
+                if (!Check(fd1.RectPoints[0][0], fd1.RectPoints[1][0], fd1.KH, fd2.RectPoints))
                 {
                     return false;
                 }
-                if (!check(fd2.RectPoints[0][0], fd2.RectPoints[0][1], fd2.KW, fd1.RectPoints))
+                if (fd1.KW != fd2.KW)
                 {
-                    return false;
-                }
-                if (!check(fd2.RectPoints[0][0], fd2.RectPoints[1][0], fd2.KH, fd1.RectPoints))
-                {
-                    return false;
+                    if (!Check(fd2.RectPoints[0][0], fd2.RectPoints[0][1], fd2.KW, fd1.RectPoints))
+                    {
+                        return false;
+                    }
+                    if (!Check(fd2.RectPoints[0][0], fd2.RectPoints[1][0], fd2.KH, fd1.RectPoints))
+                    {
+                        return false;
+                    }
                 }
                 return true;
             }
