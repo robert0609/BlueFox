@@ -468,7 +468,7 @@ var BlueFox = (function (self)
         this.RenderList = function ()
         {
             return _renderList;
-        }
+        };
 
         this.LayerContext = function ()
         {
@@ -539,6 +539,100 @@ var BlueFox = (function (self)
 
             return middle;
         };
+
+        function QuarterTreeClass(x, y, w, h)
+        {
+            var _maxRenders = 10;
+
+            this.Location = new BFLocationClass(x, y);
+            this.Size = new BFSizeClass(w, h);
+            this.FoundationRenders = new Array();
+            this.Subs = new Array();
+
+            this.Clear = function ()
+            {
+                this.FoundationRenders.splice(0, this.FoundationRenders.length);
+
+                while (this.Subs.length > 0)
+                {
+                    var loop = this.Subs.shift();
+                    loop.Clear();
+                }
+            };
+
+            this.Split = function ()
+            {
+//                if (this.FoundationRenders.length < _maxRenders)
+//                {
+//                    return;
+//                }
+                var x1 = this.Location.X;
+                var y1 = this.Location.Y;
+                var w1 = this.Size.Width;
+                var h1 = this.Size.Height;
+                this.Subs.push(new QuarterTreeClass(x1, y1, w1 / 2, h1 / 2));
+                this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1, w1 / 2, h1 / 2));
+                this.Subs.push(new QuarterTreeClass(x1, y1 + h1 / 2, w1 / 2, h1 / 2));
+                this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1 + h1 / 2, w1 / 2, h1 / 2));
+            };
+
+            this.Contains(foundationRender)
+            {
+                var ret = false;
+
+                var x1 = this.Location.X;
+                var y1 = this.Location.Y;
+                var w1 = this.Size.Width;
+                var h1 = this.Size.Height;
+                var fd = foundationRender.Foundation;
+                if (fd.Flag == 'circle')
+                {
+                    if (fd.Center.X - w1 / 2 >= x1 && fd.Center.X + w1 / 2 <= x1 + w1 &&
+                        fd.Center.Y - h1 / 2 >= y1 && fd.Center.Y + h1 / 2 <= y1 + h1)
+                    {
+                        ret = true;
+                    }
+                }
+                else if (fd.Flag == 'rectangle')
+                {
+                    var i, j;
+                    var bIn = true;
+                    for (i = 0; i < fd.RectPoints.length; ++i)
+                    {
+                        var list = fd.RectPoints[i];
+                        for (j = 0; j < list.length; ++j)
+                        {
+                            var p = list[j];
+                            if (p.X >= x1 && p.X <= x1 + w1 && p.Y >= y1 && p.Y <= y1 + h1)
+                            {
+                                continue;
+                            }
+                            bIn = false;
+                            break;
+                        }
+                        if (!bIn)
+                        {
+                            break;
+                        }
+                    }
+                    ret = bIn;
+                }
+
+                return ret;
+            };
+
+            this.GetIndex = function (foundationRender)
+            {
+
+            };
+
+            this.Insert = function ()
+            {};
+
+            this.Retrieve = function ()
+            {
+            };
+        }
     }
 
     /**
@@ -793,15 +887,18 @@ var BlueFox = (function (self)
         {
             this.Center.X = x;
             this.Center.Y = y;
-            var i, j;
-            for (i = 0; i < this.RectPoints.length; ++i)
+            if (this.Flag == 'rectangle')
             {
-                var list = this.RectPoints[i];
-                for (j = 0; j < list.length; ++j)
+                var i, j;
+                for (i = 0; i < this.RectPoints.length; ++i)
                 {
-                    var p = list[j];
-                    p.X = p.X + this.Center.X;
-                    p.Y = p.Y + this.Center.Y;
+                    var list = this.RectPoints[i];
+                    for (j = 0; j < list.length; ++j)
+                    {
+                        var p = list[j];
+                        p.X = p.X + this.Center.X;
+                        p.Y = p.Y + this.Center.Y;
+                    }
                 }
             }
         };
@@ -933,7 +1030,7 @@ var BlueFox = (function (self)
                     }
                     this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
                 }
-            }
+            };
 
             /**
              * 检测与其他元素是否碰撞
@@ -1185,7 +1282,7 @@ var BlueFox = (function (self)
             this.CheckExceedX = function ()
             {
                 return this.CheckExceed('x');
-            }
+            };
 
             /**
              * 判断Y方向是否移动到了目标坐标
@@ -1195,7 +1292,7 @@ var BlueFox = (function (self)
             this.CheckExceedY = function ()
             {
                 return this.CheckExceed('y');
-            }
+            };
 
             /**
              * 判断是否移动到了目标坐标
@@ -1247,7 +1344,7 @@ var BlueFox = (function (self)
                 {
                     return true;
                 }
-            }
+            };
 
             /**
              * 移动目标X坐标值
