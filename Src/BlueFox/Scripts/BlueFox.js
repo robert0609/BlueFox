@@ -143,6 +143,172 @@ var BlueFox = (function (self)
     }
 
     /**
+     * 四叉树类
+     * @param x 矩形左上坐标
+     * @param y 矩形左上坐标
+     * @param w 长度
+     * @param h 宽度
+     * @constructor
+     */
+    function QuarterTreeClass(x, y, w, h)
+    {
+        var _maxRenders = 10;
+
+        this.Location = new BFLocationClass(x, y);
+        this.Size = new BFSizeClass(w, h);
+        this.FoundationRenders = new Array();
+        this.Subs = new Array();
+
+        this.Clear = function ()
+        {
+            this.FoundationRenders.splice(0, this.FoundationRenders.length);
+
+            while (this.Subs.length > 0)
+            {
+                var loop = this.Subs.shift();
+                loop.Clear();
+            }
+        };
+
+        this.Split = function ()
+        {
+            var x1 = this.Location.X;
+            var y1 = this.Location.Y;
+            var w1 = this.Size.Width;
+            var h1 = this.Size.Height;
+            this.Subs.push(new QuarterTreeClass(x1, y1, w1 / 2, h1 / 2));
+            this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1, w1 / 2, h1 / 2));
+            this.Subs.push(new QuarterTreeClass(x1, y1 + h1 / 2, w1 / 2, h1 / 2));
+            this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1 + h1 / 2, w1 / 2, h1 / 2));
+        };
+
+        this.Contains(foundationRender)
+        {
+            var ret = false;
+
+            var x1 = this.Location.X;
+            var y1 = this.Location.Y;
+            var w1 = this.Size.Width;
+            var h1 = this.Size.Height;
+            var fd = foundationRender.Foundation;
+            if (fd.Flag == 'circle')
+            {
+                if (fd.Center.X - w1 / 2 >= x1 && fd.Center.X + w1 / 2 <= x1 + w1 &&
+                    fd.Center.Y - h1 / 2 >= y1 && fd.Center.Y + h1 / 2 <= y1 + h1)
+                {
+                    ret = true;
+                }
+            }
+            else if (fd.Flag == 'rectangle')
+            {
+                var i, j;
+                var bIn = true;
+                for (i = 0; i < fd.RectPoints.length; ++i)
+                {
+                    var list = fd.RectPoints[i];
+                    for (j = 0; j < list.length; ++j)
+                    {
+                        var p = list[j];
+                        if (p.X >= x1 && p.X <= x1 + w1 && p.Y >= y1 && p.Y <= y1 + h1)
+                        {
+                            continue;
+                        }
+                        bIn = false;
+                        break;
+                    }
+                    if (!bIn)
+                    {
+                        break;
+                    }
+                }
+                ret = bIn;
+            }
+
+            return ret;
+        };
+
+        this.GetIndex = function (foundationRender)
+        {
+            var idx = -1;
+            if (this.Subs.length > 0)
+            {
+                for (var i = 0; i < this.Subs.length; ++i)
+                {
+                    if (this.Subs[i].Contains(foundationRender))
+                    {
+                        idx = i;
+                    }
+                }
+            }
+            return idx;
+        };
+
+        this.Insert = function (foundationRender)
+        {
+            if (this.Subs.length < 1)
+            {
+                this.FoundationRenders.push(foundationRender);
+                if (this.FoundationRenders.length > _maxRenders)
+                {
+                    this.Split();
+                    var rest = new Array();
+                    while (this.FoundationRenders.length > 0)
+                    {
+                        var loop = this.FoundationRenders.shift();
+                        var i = this.GetIndex(loop);
+                        if (i > -1)
+                        {
+                            this.Subs[i].Insert(loop);
+                        }
+                        else
+                        {
+                            rest.push(loop);
+                        }
+                    }
+                    this.FoundationRenders = rest;
+                }
+            }
+            else
+            {
+                var j = this.GetIndex(foundationRender);
+                if (j > -1)
+                {
+                    this.Subs[j].Insert(foundationRender);
+                }
+                else
+                {
+                    this.FoundationRenders.push(foundationRender);
+                }
+            }
+        };
+
+        this.GetContainedRenders = function ()
+        {
+            if (this.Subs.length > 0)
+            {
+                return this.FoundationRenders.concat(this.Subs[0].GetContainedRenders(), this.Subs[1].GetContainedRenders(), this.Subs[2].GetContainedRenders(), this.Subs[3].GetContainedRenders());
+            }
+            else
+            {
+                return this.FoundationRenders;
+            }
+        };
+
+        this.Retrieve = function (foundationRender)
+        {
+            var i = this.GetIndex(foundationRender);
+            if (i > -1)
+            {
+                return this.Subs[i].Retrieve(foundationRender);
+            }
+            else
+            {
+                return this.GetContainedRenders();
+            }
+        };
+    }
+
+    /**
      * 所有加载的资源的容器
      * @constructor
      */
@@ -539,168 +705,6 @@ var BlueFox = (function (self)
 
             return middle;
         };
-
-        function QuarterTreeClass(x, y, w, h)
-        {
-            var _maxRenders = 10;
-
-            this.Location = new BFLocationClass(x, y);
-            this.Size = new BFSizeClass(w, h);
-            this.FoundationRenders = new Array();
-            this.Subs = new Array();
-
-            this.Clear = function ()
-            {
-                this.FoundationRenders.splice(0, this.FoundationRenders.length);
-
-                while (this.Subs.length > 0)
-                {
-                    var loop = this.Subs.shift();
-                    loop.Clear();
-                }
-            };
-
-            this.Split = function ()
-            {
-//                if (this.FoundationRenders.length < _maxRenders)
-//                {
-//                    return;
-//                }
-                var x1 = this.Location.X;
-                var y1 = this.Location.Y;
-                var w1 = this.Size.Width;
-                var h1 = this.Size.Height;
-                this.Subs.push(new QuarterTreeClass(x1, y1, w1 / 2, h1 / 2));
-                this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1, w1 / 2, h1 / 2));
-                this.Subs.push(new QuarterTreeClass(x1, y1 + h1 / 2, w1 / 2, h1 / 2));
-                this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1 + h1 / 2, w1 / 2, h1 / 2));
-            };
-
-            this.Contains(foundationRender)
-            {
-                var ret = false;
-
-                var x1 = this.Location.X;
-                var y1 = this.Location.Y;
-                var w1 = this.Size.Width;
-                var h1 = this.Size.Height;
-                var fd = foundationRender.Foundation;
-                if (fd.Flag == 'circle')
-                {
-                    if (fd.Center.X - w1 / 2 >= x1 && fd.Center.X + w1 / 2 <= x1 + w1 &&
-                        fd.Center.Y - h1 / 2 >= y1 && fd.Center.Y + h1 / 2 <= y1 + h1)
-                    {
-                        ret = true;
-                    }
-                }
-                else if (fd.Flag == 'rectangle')
-                {
-                    var i, j;
-                    var bIn = true;
-                    for (i = 0; i < fd.RectPoints.length; ++i)
-                    {
-                        var list = fd.RectPoints[i];
-                        for (j = 0; j < list.length; ++j)
-                        {
-                            var p = list[j];
-                            if (p.X >= x1 && p.X <= x1 + w1 && p.Y >= y1 && p.Y <= y1 + h1)
-                            {
-                                continue;
-                            }
-                            bIn = false;
-                            break;
-                        }
-                        if (!bIn)
-                        {
-                            break;
-                        }
-                    }
-                    ret = bIn;
-                }
-
-                return ret;
-            };
-
-            this.GetIndex = function (foundationRender)
-            {
-                var idx = -1;
-                if (this.Subs.length > 0)
-                {
-                    for (var i = 0; i < this.Subs.length; ++i)
-                    {
-                        if (this.Subs[i].Contains(foundationRender))
-                        {
-                            idx = i;
-                        }
-                    }
-                }
-                return idx;
-            };
-
-            this.Insert = function (foundationRender)
-            {
-                if (this.Subs.length < 1)
-                {
-                    this.FoundationRenders.push(foundationRender);
-                    if (this.FoundationRenders.length > _maxRenders)
-                    {
-                        this.Split();
-                        var rest = new Array();
-                        while (this.FoundationRenders.length > 0)
-                        {
-                            var loop = this.FoundationRenders.shift();
-                            var i = this.GetIndex(loop);
-                            if (i > -1)
-                            {
-                                this.Subs[i].Insert(loop);
-                            }
-                            else
-                            {
-                                rest.push(loop);
-                            }
-                        }
-                        this.FoundationRenders = rest;
-                    }
-                }
-                else
-                {
-                    var j = this.GetIndex(foundationRender);
-                    if (j > -1)
-                    {
-                        this.Subs[j].Insert(foundationRender);
-                    }
-                    else
-                    {
-                        this.FoundationRenders.push(foundationRender);
-                    }
-                }
-            };
-
-            this.GetContainedRenders = function ()
-            {
-                if (this.Subs.length > 0)
-                {
-                    return this.FoundationRenders.concat(this.Subs[0].GetContainedRenders(), this.Subs[1].GetContainedRenders(), this.Subs[2].GetContainedRenders(), this.Subs[3].GetContainedRenders());
-                }
-                else
-                {
-                    return this.FoundationRenders;
-                }
-            };
-
-            this.Retrieve = function (foundationRender)
-            {
-                var i = this.GetIndex(foundationRender);
-                if (i > -1)
-                {
-                    return this.Subs[i].Retrieve(foundationRender);
-                }
-                else
-                {
-                    return this.GetContainedRenders();
-                }
-            };
-        }
     }
 
     /**
@@ -1038,6 +1042,8 @@ var BlueFox = (function (self)
         {
             this.CanDrag = true;
 
+            this.CanCollision = true;
+
             this.Center2CLocation = function (xOry, val)
             {
                 var ret = 0;
@@ -1071,7 +1077,7 @@ var BlueFox = (function (self)
 
             // 元素的地基，用以碰撞检测
             this.Foundation = new BFFoundationClass(entity.Foundation);
-            // 地基中心坐标
+            // 地基中心坐标(地图坐标)
             this.FoundationCenter = null;
             // 地图图层
             var _mapLayer = null;
