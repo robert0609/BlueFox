@@ -624,13 +624,81 @@ var BlueFox = (function (self)
             this.GetIndex = function (foundationRender)
             {
                 var idx = -1;
+                if (this.Subs.length > 0)
+                {
+                    for (var i = 0; i < this.Subs.length; ++i)
+                    {
+                        if (this.Subs[i].Contains(foundationRender))
+                        {
+                            idx = i;
+                        }
+                    }
+                }
+                return idx;
             };
 
-            this.Insert = function ()
-            {};
-
-            this.Retrieve = function ()
+            this.Insert = function (foundationRender)
             {
+                if (this.Subs.length < 1)
+                {
+                    this.FoundationRenders.push(foundationRender);
+                    if (this.FoundationRenders.length > _maxRenders)
+                    {
+                        this.Split();
+                        var rest = new Array();
+                        while (this.FoundationRenders.length > 0)
+                        {
+                            var loop = this.FoundationRenders.shift();
+                            var i = this.GetIndex(loop);
+                            if (i > -1)
+                            {
+                                this.Subs[i].Insert(loop);
+                            }
+                            else
+                            {
+                                rest.push(loop);
+                            }
+                        }
+                        this.FoundationRenders = rest;
+                    }
+                }
+                else
+                {
+                    var j = this.GetIndex(foundationRender);
+                    if (j > -1)
+                    {
+                        this.Subs[j].Insert(foundationRender);
+                    }
+                    else
+                    {
+                        this.FoundationRenders.push(foundationRender);
+                    }
+                }
+            };
+
+            this.GetContainedRenders = function ()
+            {
+                if (this.Subs.length > 0)
+                {
+                    return this.FoundationRenders.concat(this.Subs[0].GetContainedRenders(), this.Subs[1].GetContainedRenders(), this.Subs[2].GetContainedRenders(), this.Subs[3].GetContainedRenders());
+                }
+                else
+                {
+                    return this.FoundationRenders;
+                }
+            };
+
+            this.Retrieve = function (foundationRender)
+            {
+                var i = this.GetIndex(foundationRender);
+                if (i > -1)
+                {
+                    return this.Subs[i].Retrieve(foundationRender);
+                }
+                else
+                {
+                    return this.GetContainedRenders();
+                }
             };
         }
     }
