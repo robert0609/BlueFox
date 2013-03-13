@@ -1072,7 +1072,7 @@ var BlueFox = (function (self)
                 return ret;
             };
 
-            // 元素移动的基准位置坐标
+            // 元素移动的基准位置坐标(屏幕坐标)
             this.CenterLocation = new BFLocationClass(this.CLocation2Center('x', this.CLocation.X), this.CLocation2Center('y', this.CLocation.Y));
 
             // 元素的地基，用以碰撞检测
@@ -1091,6 +1091,7 @@ var BlueFox = (function (self)
                 if (!IsNullOrUndefined(mapLayer))
                 {
                     _mapLayer = mapLayer;
+                    this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
                 }
                 if (!IsNullOrUndefined(_mapLayer))
                 {
@@ -1451,6 +1452,8 @@ var BlueFox = (function (self)
                 var tx = this.TargetX();
                 var ty = this.TargetY();
 
+                //this.FoundationCenter.X += this.DirectionX * this.Speed;
+
                 this.CenterLocation.X += this.DirectionX * this.Speed;
                 bx = this.CheckExceedX();
                 if (bx)
@@ -1522,6 +1525,7 @@ var BlueFox = (function (self)
 
             var _transformCache = [ [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 0, 0] ];
 
+            // 变换矩阵[a, b, c, d, e, f]
             var _matrix = [1, 0, 0, 1, 0, 0];
 
             this.Scale = function (sx, sy)
@@ -1575,6 +1579,35 @@ var BlueFox = (function (self)
                 return [a, b, c, d, e, f];
             }
 
+            /**
+             * 矩阵变换运算，由地图坐标计算出屏幕坐标
+             * @param x 地图x坐标
+             * @param y 地图y坐标
+             * @return {BFLocationClass}
+             * @method
+             */
+            this.ConvertMapLocation = function (x, y)
+            {
+                var a = _matrix[0];
+                var b = _matrix[1];
+                var c = _matrix[2];
+                var d = _matrix[3];
+                var e = _matrix[4];
+                var f = _matrix[5];
+
+                var x1 = a * x + c * y + e;
+                var y1 = b * x + d * y + f;
+
+                return new BFLocationClass(x1, y1);
+            };
+
+            /**
+             * 矩阵逆变换运算，由屏幕坐标计算出地图坐标
+             * @param x 屏幕x坐标
+             * @param y 屏幕y坐标
+             * @return {BFLocationClass}
+             * @method
+             */
             this.ConvertScreenLocation = function (x, y)
             {
                 // 矩阵逆变换运算，由屏幕坐标计算出地图坐标
