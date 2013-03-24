@@ -1081,6 +1081,12 @@ var BlueFox = (function (self)
             this.FoundationCenter = null;
             // 地图图层
             var _mapLayer = null;
+
+            this.MapLayer = function ()
+            {
+                return _mapLayer;
+            };
+
             /**
              * 将本元素的地基投影到地图图层上
              * @param mapLayer 地图图层
@@ -1090,8 +1096,11 @@ var BlueFox = (function (self)
             {
                 if (!IsNullOrUndefined(mapLayer))
                 {
+                    if (IsNullOrUndefined(this.FoundationCenter))
+                    {
+                        this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
+                    }
                     _mapLayer = mapLayer;
-                    this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
                 }
                 if (!IsNullOrUndefined(_mapLayer))
                 {
