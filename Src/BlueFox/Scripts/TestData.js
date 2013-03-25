@@ -19,6 +19,6 @@ function GetMapList()
 
 function GetBuildingList()
 {
-    var str = '[{"CX":0,"CY":0,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","ZOrder":128},{"CX":300,"CY":256,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","ZOrder":384},{"CX":500,"CY":500,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","ZOrder":628},{"CX":100,"CY":458,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","ZOrder":586}]';
+    var str = '[{"CX":400,"CY":100,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","Foundation":{"Flag":"circle","Radius":48,"RectPoints":null},"ZOrder":228},{"CX":300,"CY":256,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","Foundation":{"Flag":"rectangle","Radius":0,"RectPoints":[[{"X":-48,"Y":20},{"X":48,"Y":20}],[{"X":-48,"Y":-20},{"X":48,"Y":-20}]]},"ZOrder":384},{"CX":500,"CY":500,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","Foundation":{"Flag":"circle","Radius":48,"RectPoints":null},"ZOrder":628},{"CX":100,"CY":458,"CWidth":96,"CHeight":128,"SX":0,"SY":0,"SWidth":96,"SHeight":128,"ResourceId":"2","Foundation":{"Flag":"rectangle","Radius":0,"RectPoints":[[{"X":-48,"Y":20},{"X":48,"Y":20}],[{"X":-48,"Y":-20},{"X":48,"Y":-20}]]},"ZOrder":586}]';
     return JSON.parse(str);
 }

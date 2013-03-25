@@ -31,13 +31,23 @@ function Load()
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer2.Index = 1;
         layer2.StrokeStyle('orange');
+        var layer3 = BlueFox.CreateBFTransformLayer(bodyWidth, bodyHeight);
+        layer3.Index = 2;
+        layer3.StrokeStyle('red');
+
         BFCanvas.AddLayer(layer2);
         BFCanvas.AddLayer(layer1);
+        BFCanvas.AddLayer(layer3);
 
         layer1.Scale(1, 0.5);
         layer1.Rotate(Math.PI / 4);
         layer1.Translate(400, -600);
         layer1.Transform();
+
+        layer3.Scale(1, 0.5);
+        layer3.Rotate(Math.PI / 4);
+        layer3.Translate(400, -600);
+        layer3.Transform();
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {
             var mapCell = BlueFox.CreateBFRender(mapList[mapCellIdx]);
@@ -46,7 +56,7 @@ function Load()
         for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
         {
             var building = BlueFox.CreateBFMovableRender(buildingList[buildingIdx]);
-            building.Cast2Map(layer1);
+            building.Cast2Map(layer3);
             layer2.AddRender(building);
         }
 

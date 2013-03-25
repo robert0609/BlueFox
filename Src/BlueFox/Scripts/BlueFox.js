@@ -618,6 +618,13 @@ var BlueFox = (function (self)
                     }
                     render.OnUpdate();
                     render.Draw(_context);
+
+                    //test------------
+                    if (render.CanCollision)
+                    {
+                        render.DrawFoundation();
+                    }
+                    //test------------
                 }
                 if (this.AutoStopRefresh)
                 {
@@ -674,6 +681,10 @@ var BlueFox = (function (self)
             var first = 0;
             var last = _renderList.length - 1;
             var middle = first + Math.floor((last - first) / 2);
+            if (middle < 0)
+            {
+                return middle;
+            }
 
             while (true)
             {
@@ -953,7 +964,7 @@ var BlueFox = (function (self)
      */
     function BFFoundationClass(foundation)
     {
-        this.Flag = foundation.flag;
+        this.Flag = foundation.Flag;
         this.Center = new BFLocationClass(0, 0);
 
         this.Radius = 0;
@@ -1004,6 +1015,22 @@ var BlueFox = (function (self)
                 }
             }
         };
+
+        //test------------
+        this.Draw = function (context)
+        {
+            if (this.Flag == 'circle')
+            {
+                context.beginPath();
+                context.arc(this.Center.X, this.Center.Y, this.Radius, 0, 2 * Math.PI, true);
+                context.fill();
+            }
+            else if (this.Flag == 'rectangle')
+            {
+                context.fillRect(this.RectPoints[0][0].X, this.RectPoints[0][0].Y, this.Width, this.Height);
+            }
+        };
+        //test------------
     }
 
     function IsNullOrUndefined(obj)
@@ -1126,6 +1153,7 @@ var BlueFox = (function (self)
             {
                 if (!IsNullOrUndefined(mapLayer))
                 {
+                    _mapLayer = mapLayer;
                     if (IsNullOrUndefined(this.FoundationCenter))
                     {
                         this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
@@ -1133,7 +1161,6 @@ var BlueFox = (function (self)
                         this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
                         this.ZOrder = this.CLocation.Y + this.CSize.Height;
                     }
-                    _mapLayer = mapLayer;
                 }
                 if (!IsNullOrUndefined(_mapLayer))
                 {
@@ -1148,6 +1175,18 @@ var BlueFox = (function (self)
                     this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
                 }
             };
+
+            //test------------
+            this.DrawFoundation = function ()
+            {
+                if (_mapLayer == null)
+                {
+                    return;
+                }
+                var context = _mapLayer.LayerContext();
+                this.Foundation.Draw(context);
+            };
+            //test------------
 
             /**
              * 检测与其他元素是否碰撞
@@ -1740,7 +1779,7 @@ var BlueFox = (function (self)
             {
                 if (self.BFResourceContainer.GetResourceLoaded())
                 {
-                    self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
+                    //self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
                     if (!canvasDiaplay)
                     {
                         document.body.innerHTML = '';
@@ -1802,6 +1841,7 @@ var BlueFox = (function (self)
                 }
                 else
                 {
+                    //TODO:modify
                     self.DragedRender.CenterLocation.X += (clickX - self.DragedRender.MouseDownLocation.X);
                     self.DragedRender.CenterLocation.Y += (clickY - self.DragedRender.MouseDownLocation.Y);
                     self.DragedRender.Cast2Map();
