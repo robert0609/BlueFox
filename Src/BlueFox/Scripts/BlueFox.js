@@ -843,70 +843,100 @@ var BlueFox = (function (self)
          */
         function MouseDoubleClickEvent(e)
         {
-            var clickX = e.pageX - this.offsetLeft;
-            var clickY = e.pageY - this.offsetTop;
-            var element = innerFindRender(clickX, clickY);
-            if (element != null)
+            try
             {
-                element.OnDoubleClick({ ClickX : clickX, ClickY : clickY });
+                var clickX = e.pageX - this.offsetLeft;
+                var clickY = e.pageY - this.offsetTop;
+                var element = innerFindRender(clickX, clickY);
+                if (element != null)
+                {
+                    element.OnDoubleClick({ ClickX : clickX, ClickY : clickY });
+                }
+                else
+                {
+                    element = self.SelectRender;
+                    element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 4 });
+                }
             }
-            else
+            catch (ex)
             {
-                element = self.SelectRender;
-                element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 4 });
+                alert(ex);
             }
-            CancelEventFlow(e);
+            finally
+            {
+                CancelEventFlow(e);
+            }
         }
 
         function MouseDownEvent(e)
         {
-            var clickX = e.pageX - this.offsetLeft;
-            var clickY = e.pageY - this.offsetTop;
-            var element = innerFindRender(clickX, clickY);
-            if (element != null)
+            try
             {
-                if (e.button == 0)
+                var clickX = e.pageX - this.offsetLeft;
+                var clickY = e.pageY - this.offsetTop;
+                var element = innerFindRender(clickX, clickY);
+                if (element != null)
                 {
-                    element.OnLeftMouseDown({ ClickX : clickX, ClickY : clickY });
+                    if (e.button == 0)
+                    {
+                        element.OnLeftMouseDown({ ClickX : clickX, ClickY : clickY });
+                    }
+                    else if (e.button == 2)
+                    {
+                        element.OnRightMouseDown({ ClickX : clickX, ClickY : clickY });
+                    }
                 }
-                else if (e.button == 2)
+                else
                 {
-                    element.OnRightMouseDown({ ClickX : clickX, ClickY : clickY });
+                    if (e.button == 0)
+                    {
+                        element = self.SelectRender;
+                        element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
+                    }
+                    else if (e.button == 2)
+                    {
+                        // TODO:右键单击“空白”区域
+                    }
                 }
             }
-            else
+            catch (ex)
             {
-                if (e.button == 0)
-                {
-                    element = self.SelectRender;
-                    element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
-                }
-                else if (e.button == 2)
-                {
-                    // TODO:右键单击“空白”区域
-                }
+                alert(ex);
             }
-            CancelEventFlow(e);
+            finally
+            {
+                CancelEventFlow(e);
+            }
         }
 
         function MouseUpEvent(e)
         {
-            var clickX = e.pageX - this.offsetLeft;
-            var clickY = e.pageY - this.offsetTop;
-            self.DragedRender = null;
-//            var element = innerFindRender(clickX, clickY);
-//            if (element != null)
-//            {
-//                if (e.button == 0)
-//                {
-//                    element.OnLeftMouseUp({ ClickX : clickX, ClickY : clickY });
-//                }
-//                else if (e.button == 2)
-//                {
-//                    element.OnRightMouseUp({ ClickX : clickX, ClickY : clickY });
-//                }
-//            }
-            CancelEventFlow(e);
+            try
+            {
+                var clickX = e.pageX - this.offsetLeft;
+                var clickY = e.pageY - this.offsetTop;
+                self.DragedRender = null;
+    //            var element = innerFindRender(clickX, clickY);
+    //            if (element != null)
+    //            {
+    //                if (e.button == 0)
+    //                {
+    //                    element.OnLeftMouseUp({ ClickX : clickX, ClickY : clickY });
+    //                }
+    //                else if (e.button == 2)
+    //                {
+    //                    element.OnRightMouseUp({ ClickX : clickX, ClickY : clickY });
+    //                }
+    //            }
+            }
+            catch (ex)
+            {
+                alert(ex);
+            }
+            finally
+            {
+                CancelEventFlow(e);
+            }
         }
 
         function ContextMenuEvent(e)
@@ -1099,6 +1129,9 @@ var BlueFox = (function (self)
                     if (IsNullOrUndefined(this.FoundationCenter))
                     {
                         this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
+                        this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
+                        this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
+                        this.ZOrder = this.CLocation.Y + this.CSize.Height;
                     }
                     _mapLayer = mapLayer;
                 }
@@ -1321,10 +1354,10 @@ var BlueFox = (function (self)
 
         function BFMovableRenderClass()
         {
-            // 移动目标坐标
+            // 移动目标坐标(地图坐标)
             var _targetX = 0;
             var _targetY = 0;
-            // 移动方向
+            // 移动方向(地图方向)
             this.DirectionX = 0;
             this.DirectionY = 0;
             // 元素在每帧移动的像素数
@@ -1340,19 +1373,19 @@ var BlueFox = (function (self)
             {
                 _targetX = x;
                 _targetY = y;
-                if (_targetX > this.CenterLocation.X)
+                if (_targetX > this.FoundationCenter.X)
                 {
                     this.DirectionX = 1;
                 }
-                else if (_targetX < this.CenterLocation.X)
+                else if (_targetX < this.FoundationCenter.X)
                 {
                     this.DirectionX = -1;
                 }
-                if (_targetY > this.CenterLocation.Y)
+                if (_targetY > this.FoundationCenter.Y)
                 {
                     this.DirectionY = 1;
                 }
-                else if (_targetY < this.CenterLocation.Y)
+                else if (_targetY < this.FoundationCenter.Y)
                 {
                     this.DirectionY = -1;
                 }
@@ -1392,13 +1425,13 @@ var BlueFox = (function (self)
                 if (dFlag == 'x')
                 {
                     t = _targetX;
-                    c = this.CenterLocation.X;
+                    c = this.FoundationCenter.X;
                     d = this.DirectionX;
                 }
                 else if (dFlag == 'y')
                 {
                     t = _targetY;
-                    c = this.CenterLocation.Y;
+                    c = this.FoundationCenter.Y;
                     d = this.DirectionY;
                 }
 
@@ -1461,29 +1494,40 @@ var BlueFox = (function (self)
                 var tx = this.TargetX();
                 var ty = this.TargetY();
 
-                //this.FoundationCenter.X += this.DirectionX * this.Speed;
-
-                this.CenterLocation.X += this.DirectionX * this.Speed;
-                bx = this.CheckExceedX();
-                if (bx)
+                if (this.DirectionX == 0)
                 {
-                    this.CenterLocation.X = tx;
-                    this.DirectionX = 0;
+                    bx = true;
                 }
+                else
+                {
+                    this.FoundationCenter.X += this.DirectionX * this.Speed;
+                    bx = this.CheckExceedX();
+                    if (bx)
+                    {
+                        this.FoundationCenter.X = tx;
+                        this.DirectionX = 0;
+                    }
+                }
+
+                if (this.DirectionY == 0)
+                {
+                    by = true;
+                }
+                else
+                {
+                    this.FoundationCenter.Y += this.DirectionY * this.Speed;
+                    by = this.CheckExceedY();
+                    if (by)
+                    {
+                        this.FoundationCenter.Y = ty;
+                        this.DirectionY = 0;
+                    }
+                }
+
+                this.CenterLocation = this.MapLayer().ConvertMapLocation(this.FoundationCenter.X, this.FoundationCenter.Y);
                 this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
-
-                this.CenterLocation.Y += this.DirectionY * this.Speed;
-                by = this.CheckExceedY();
-                if (by)
-                {
-                    this.CenterLocation.Y = ty;
-                    this.DirectionY = 0;
-                }
                 this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
-
                 this.ZOrder = this.CLocation.Y + this.CSize.Height;
-
-                this.Cast2Map();
 
                 if (bx && by)
                 {
@@ -1499,7 +1543,20 @@ var BlueFox = (function (self)
              */
             this.OnStartMove = function (e)
             {
-                this.SetMoveTarget(e.TargetX, e.TargetY);
+                var x = e.TargetX;
+                var y = e.TargetY;
+                var mapLyr = this.MapLayer();
+                if (IsNullOrUndefined(mapLyr))
+                {
+                    throw '元素(' + this.GUID + ')还没有投影至地图层上，无法在地图上移动!';
+                }
+                if (mapLyr.CanTransform)
+                {
+                    var tmp = mapLyr.ConvertScreenLocation(e.TargetX, e.TargetY);
+                    x = tmp.X;
+                    y = tmp.Y;
+                }
+                this.SetMoveTarget(x, y);
                 this.Speed = e.Speed;
             };
 
@@ -1679,73 +1736,90 @@ var BlueFox = (function (self)
 
         function Refresh()
         {
-            if (self.BFResourceContainer.GetResourceLoaded())
+            try
             {
-                self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
-                if (!canvasDiaplay)
+                if (self.BFResourceContainer.GetResourceLoaded())
                 {
-                    document.body.innerHTML = '';
-                    document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
-                    canvasDiaplay = true;
+                    self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
+                    if (!canvasDiaplay)
+                    {
+                        document.body.innerHTML = '';
+                        document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                        canvasDiaplay = true;
+                    }
+                    self.GlobalBFCanvas.Draw();
                 }
-                self.GlobalBFCanvas.Draw();
+                else
+                {
+                    if (!loadingHtmlDisplay)
+                    {
+                        document.body.innerHTML = ConstLoadingHtml;
+                        loadingHtmlDisplay = true;
+                    }
+                }
             }
-            else
+            catch (ex)
             {
-                if (!loadingHtmlDisplay)
-                {
-                    document.body.innerHTML = ConstLoadingHtml;
-                    loadingHtmlDisplay = true;
-                }
+                alert(ex);
             }
         }
 
         function MouseMoveEvent(e)
         {
-            self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
-            var clickX = e.pageX - this.offsetLeft;
-            var clickY = e.pageY - this.offsetTop;
-            if (self.DragedRender == null)
+            try
             {
-                var element = self.GlobalBFCanvas.FindRender(clickX, clickY);
-                if (self.CaptureMouseRender == null)
+                self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
+                var clickX = e.pageX - this.offsetLeft;
+                var clickY = e.pageY - this.offsetTop;
+                if (self.DragedRender == null)
                 {
-                    if (element != null)
+                    var element = self.GlobalBFCanvas.FindRender(clickX, clickY);
+                    if (self.CaptureMouseRender == null)
                     {
-                        element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
-                        self.CaptureMouseRender = element;
-                    }
-                }
-                else
-                {
-                    if (element == null)
-                    {
-                        self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
-                        self.CaptureMouseRender = null;
-                    }
-                    else
-                    {
-                        if (self.CaptureMouseRender.GUID != element.GUID)
+                        if (element != null)
                         {
-                            self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
                             element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
                             self.CaptureMouseRender = element;
                         }
                     }
+                    else
+                    {
+                        if (element == null)
+                        {
+                            self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
+                            self.CaptureMouseRender = null;
+                        }
+                        else
+                        {
+                            if (self.CaptureMouseRender.GUID != element.GUID)
+                            {
+                                self.CaptureMouseRender.OnMouseOut({ ClickX : clickX, ClickY : clickY });
+                                element.OnMouseOver({ ClickX : clickX, ClickY : clickY });
+                                self.CaptureMouseRender = element;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    self.DragedRender.CenterLocation.X += (clickX - self.DragedRender.MouseDownLocation.X);
+                    self.DragedRender.CenterLocation.Y += (clickY - self.DragedRender.MouseDownLocation.Y);
+                    self.DragedRender.Cast2Map();
+                    self.DragedRender.MouseDownLocation.X = clickX;
+                    self.DragedRender.MouseDownLocation.Y = clickY;
+                    self.DragedRender.CLocation.X = self.DragedRender.Center2CLocation('x', self.DragedRender.CenterLocation.X);
+                    self.DragedRender.CLocation.Y = self.DragedRender.Center2CLocation('y', self.DragedRender.CenterLocation.Y);
+                    self.DragedRender.ZOrder = self.DragedRender.CLocation.Y + self.DragedRender.CSize.Height;
                 }
             }
-            else
+            catch (ex)
             {
-                self.DragedRender.CenterLocation.X += (clickX - self.DragedRender.MouseDownLocation.X);
-                self.DragedRender.CenterLocation.Y += (clickY - self.DragedRender.MouseDownLocation.Y);
-                self.DragedRender.Cast2Map();
-                self.DragedRender.MouseDownLocation.X = clickX;
-                self.DragedRender.MouseDownLocation.Y = clickY;
-                self.DragedRender.CLocation.X = self.DragedRender.Center2CLocation('x', self.DragedRender.CenterLocation.X);
-                self.DragedRender.CLocation.Y = self.DragedRender.Center2CLocation('y', self.DragedRender.CenterLocation.Y);
-                self.DragedRender.ZOrder = self.DragedRender.CLocation.Y + self.DragedRender.CSize.Height;
+                alert(ex);
             }
-            CancelEventFlow(e);
+            finally
+            {
+                CancelEventFlow(e);
+            }
         }
     };
 
