@@ -618,13 +618,6 @@ var BlueFox = (function (self)
                     }
                     render.OnUpdate();
                     render.Draw(_context);
-
-                    //test------------
-                    if (render.CanCollision)
-                    {
-                        render.DrawFoundation();
-                    }
-                    //test------------
                 }
                 if (this.AutoStopRefresh)
                 {
@@ -998,6 +991,8 @@ var BlueFox = (function (self)
 
         this.SetCenter = function (x, y)
         {
+            var originalX = this.Center.X;
+            var originalY = this.Center.Y;
             this.Center.X = x;
             this.Center.Y = y;
             if (this.Flag == 'rectangle')
@@ -1009,14 +1004,13 @@ var BlueFox = (function (self)
                     for (j = 0; j < list.length; ++j)
                     {
                         var p = list[j];
-                        p.X = p.X + this.Center.X;
-                        p.Y = p.Y + this.Center.Y;
+                        p.X = p.X + this.Center.X - originalX;
+                        p.Y = p.Y + this.Center.Y - originalY;
                     }
                 }
             }
         };
 
-        //test------------
         this.Draw = function (context)
         {
             if (this.Flag == 'circle')
@@ -1030,7 +1024,6 @@ var BlueFox = (function (self)
                 context.fillRect(this.RectPoints[0][0].X, this.RectPoints[0][0].Y, this.Width, this.Height);
             }
         };
-        //test------------
     }
 
     function IsNullOrUndefined(obj)
@@ -1154,6 +1147,7 @@ var BlueFox = (function (self)
                 if (!IsNullOrUndefined(mapLayer))
                 {
                     _mapLayer = mapLayer;
+                    _mapLayer.FoundationList().push(this.Foundation);
                     if (IsNullOrUndefined(this.FoundationCenter))
                     {
                         this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
@@ -1175,18 +1169,6 @@ var BlueFox = (function (self)
                     this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
                 }
             };
-
-            //test------------
-            this.DrawFoundation = function ()
-            {
-                if (_mapLayer == null)
-                {
-                    return;
-                }
-                var context = _mapLayer.LayerContext();
-                this.Foundation.Draw(context);
-            };
-            //test------------
 
             /**
              * 检测与其他元素是否碰撞
@@ -1567,6 +1549,7 @@ var BlueFox = (function (self)
                 this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
                 this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
                 this.ZOrder = this.CLocation.Y + this.CSize.Height;
+                this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
 
                 if (bx && by)
                 {
@@ -1753,6 +1736,42 @@ var BlueFox = (function (self)
         return new BFTransformLayerClass();
     };
 
+    self.CreateBFCollisionLayer = function (w, h)
+    {
+        BFCollisionLayerClass.prototype = self.CreateBFTransformLayer(w, h);
+
+        function BFCollisionLayerClass()
+        {
+            var _foundationList = new Array();
+
+            this.FoundationList = function ()
+            {
+                return _foundationList;
+            };
+
+            this.Draw = function ()
+            {
+                if (this.Refresh)
+                {
+                    var context = this.LayerContext();
+                    context.clearRect(0, 0, w, h);
+                    var foundation = null;
+                    for (var i = 0; i < _foundationList.length; ++i)
+                    {
+                        foundation = _foundationList[i];
+                        foundation.Draw(context);
+                    }
+                    if (this.AutoStopRefresh)
+                    {
+                        this.Refresh = false;
+                    }
+                }
+            };
+        }
+
+        return new BFCollisionLayerClass();
+    };
+
     self.CreateBFCanvas = function (w, h)
     {
         self.GlobalBFCanvas = new BFCanvasClass(w, h);
@@ -1779,7 +1798,7 @@ var BlueFox = (function (self)
             {
                 if (self.BFResourceContainer.GetResourceLoaded())
                 {
-                    //self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
+                    //TODO self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
                     if (!canvasDiaplay)
                     {
                         document.body.innerHTML = '';

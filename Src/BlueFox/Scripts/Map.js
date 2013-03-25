@@ -29,10 +29,10 @@ function Load()
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
-        layer2.Index = 1;
+        layer2.Index = 2;
         layer2.StrokeStyle('orange');
-        var layer3 = BlueFox.CreateBFTransformLayer(bodyWidth, bodyHeight);
-        layer3.Index = 2;
+        var layer3 = BlueFox.CreateBFCollisionLayer(bodyWidth, bodyHeight);
+        layer3.Index = 1;
         layer3.StrokeStyle('red');
 
         BFCanvas.AddLayer(layer2);
