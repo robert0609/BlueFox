@@ -182,7 +182,7 @@ var BlueFox = (function (self)
             this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1 + h1 / 2, w1 / 2, h1 / 2));
         };
 
-        this.Contains(foundationRender)
+        this.Contains = function (foundationRender)
         {
             var ret = false;
 
