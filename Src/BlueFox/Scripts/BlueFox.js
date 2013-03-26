@@ -156,7 +156,9 @@ var BlueFox = (function (self)
 
         this.Location = new BFLocationClass(x, y);
         this.Size = new BFSizeClass(w, h);
+        // 该树节点包含的FoundationRender列表
         this.FoundationRenders = new Array();
+        // 该树节点包含的子节点
         this.Subs = new Array();
 
         this.Clear = function ()
