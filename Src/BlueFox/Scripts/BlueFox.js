@@ -161,6 +161,10 @@ var BlueFox = (function (self)
         // 该树节点包含的子节点
         this.Subs = new Array();
 
+        /**
+         * 递归清空四叉树
+         * @method
+         */
         this.Clear = function ()
         {
             this.FoundationRenders.splice(0, this.FoundationRenders.length);
@@ -172,6 +176,10 @@ var BlueFox = (function (self)
             }
         };
 
+        /**
+         * 将本节点分割成四部分
+         * @method
+         */
         this.Split = function ()
         {
             var x1 = this.Location.X;
@@ -184,6 +192,12 @@ var BlueFox = (function (self)
             this.Subs.push(new QuarterTreeClass(x1 + w1 / 2, y1 + h1 / 2, w1 / 2, h1 / 2));
         };
 
+        /**
+         * 判断当前节点区域是否包含指定的地基
+         * @param foundationRender 地基
+         * @return {Boolean}
+         * @method
+         */
         this.Contains = function (foundationRender)
         {
             var ret = false;
@@ -195,8 +209,9 @@ var BlueFox = (function (self)
             var fd = foundationRender.Foundation;
             if (fd.Flag == 'circle')
             {
-                if (fd.Center.X - w1 / 2 >= x1 && fd.Center.X + w1 / 2 <= x1 + w1 &&
-                    fd.Center.Y - h1 / 2 >= y1 && fd.Center.Y + h1 / 2 <= y1 + h1)
+                var r = fd.Radius;
+                if (fd.Center.X >= x1 + r && fd.Center.X <= x1 + w1 - r &&
+                    fd.Center.Y >= y1 + r && fd.Center.Y <= y1 + h1 - r)
                 {
                     ret = true;
                 }
@@ -229,6 +244,12 @@ var BlueFox = (function (self)
             return ret;
         };
 
+        /**
+         * 判断指定的地基属于哪个子节点的区域
+         * @param foundationRender 地基
+         * @return {Number}
+         * @method
+         */
         this.GetIndex = function (foundationRender)
         {
             var idx = -1;
@@ -245,6 +266,11 @@ var BlueFox = (function (self)
             return idx;
         };
 
+        /**
+         * 将指定的地基插入至四叉树中的某个节点，若节点的包含地基数超出指定最大数目则自动分割
+         * @param foundationRender 地基
+         * @method
+         */
         this.Insert = function (foundationRender)
         {
             if (this.Subs.length < 1)
@@ -284,6 +310,11 @@ var BlueFox = (function (self)
             }
         };
 
+        /**
+         * 返回当前节点包含的所有地基
+         * @return {List}
+         * @method
+         */
         this.GetContainedRenders = function ()
         {
             if (this.Subs.length > 0)
@@ -296,8 +327,15 @@ var BlueFox = (function (self)
             }
         };
 
+        /**
+         * 返回可能与指定的地基产生碰撞的地基列表
+         * @param foundationRender 地基
+         * @return {List}
+         * @method
+         */
         this.Retrieve = function (foundationRender)
         {
+            //TODO:这块有问题
             var i = this.GetIndex(foundationRender);
             if (i > -1)
             {
