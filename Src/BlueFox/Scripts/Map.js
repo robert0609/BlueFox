@@ -25,13 +25,13 @@ function Load()
 
         var BFCanvas = BlueFox.CreateBFCanvas(bodyWidth, bodyHeight);
 
-        var layer1 = BlueFox.CreateBFTransformLayer(bodyWidth, bodyHeight);
+        var layer1 = BlueFox.CreateBFTransformLayer(1280, 1920);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
         var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
         layer2.Index = 2;
         layer2.StrokeStyle('orange');
-        var layer3 = BlueFox.CreateBFCollisionLayer(bodyWidth, bodyHeight);
+        var layer3 = BlueFox.CreateBFCollisionLayer(layer1.Width(), layer1.Height());
         layer3.Index = 1;
         layer3.StrokeStyle('red');
 
@@ -39,12 +39,12 @@ function Load()
         BFCanvas.AddLayer(layer1);
         BFCanvas.AddLayer(layer3);
 
-        layer1.Scale(1, 0.5);
+        layer1.Scale(1, 0.4);
         layer1.Rotate(Math.PI / 4);
         layer1.Translate(400, -600);
         layer1.Transform();
 
-        layer3.Scale(1, 0.5);
+        layer3.Scale(1, 0.4);
         layer3.Rotate(Math.PI / 4);
         layer3.Translate(400, -600);
         layer3.Transform();

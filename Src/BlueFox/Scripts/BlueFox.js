@@ -631,6 +631,16 @@ var BlueFox = (function (self)
             return _layerCanvas;
         };
 
+        this.Width = function()
+        {
+            return _layerCanvas.width;
+        };
+
+        this.Height = function ()
+        {
+            return _layerCanvas.height;
+        };
+
         this.RenderList = function ()
         {
             return _renderList;
@@ -756,7 +766,7 @@ var BlueFox = (function (self)
                 layer = _layerList[i];
                 layer.Draw();
                 layerCanvas = layer.LayerCanvas();
-                _bufferContext.drawImage(layerCanvas, 0, 0, layerCanvas.width, layerCanvas.height, 0, 0, w, h);
+                _bufferContext.drawImage(layerCanvas, 0, 0, w, h, 0, 0, w, h);
             }
 
             // 获取当前时刻
