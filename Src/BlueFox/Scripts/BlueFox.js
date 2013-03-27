@@ -1142,7 +1142,10 @@ var BlueFox = (function (self)
         {
             this.CanDrag = true;
 
-            this.CanCollision = true;
+            this.HaveFoundation = true;
+
+            // 是否强制检测碰撞的标志位。True:不论对方的ForceCheckConflict真假都检测碰撞;False:当对方的ForceCheckConflict为真才检测碰撞
+            this.ForceCheckConflict = false;
 
             this.Center2CLocation = function (xOry, val)
             {
@@ -1197,7 +1200,7 @@ var BlueFox = (function (self)
                 if (!IsNullOrUndefined(mapLayer))
                 {
                     _mapLayer = mapLayer;
-                    _mapLayer.FoundationList().push(this.Foundation);
+                    _mapLayer.FoundationRenderList().push(this);
                     if (IsNullOrUndefined(this.FoundationCenter))
                     {
                         this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
@@ -1405,6 +1408,14 @@ var BlueFox = (function (self)
                 }
                 return true;
             }
+
+            /**
+             * 碰撞事件
+             * @param foundationRender 发生碰撞的对方元素
+             * @event
+             */
+            this.OnConflict = function (foundationRender)
+            {};
         }
 
         return new BFFoundationRenderClass();
@@ -1641,6 +1652,17 @@ var BlueFox = (function (self)
             {
 
             };
+
+            /**
+             * 碰撞事件
+             * @param foundationRender 发生碰撞的对方元素
+             * @event
+             */
+            this.OnConflict = function (foundationRender)
+            {
+                this.Speed = 0;
+                this.OnStopMove({ TargetX : this.FoundationCenter.X, TargetY : this.FoundationCenter.Y });
+            };
         }
 
         return new BFMovableRenderClass();
@@ -1792,11 +1814,13 @@ var BlueFox = (function (self)
 
         function BFCollisionLayerClass()
         {
-            var _foundationList = new Array();
+            var _foundationRenderList = new Array();
 
-            this.FoundationList = function ()
+            var _quarterTree = new QuarterTreeClass(0, 0, w, h);
+
+            this.FoundationRenderList = function ()
             {
-                return _foundationList;
+                return _foundationRenderList;
             };
 
             this.Draw = function ()
@@ -1805,11 +1829,45 @@ var BlueFox = (function (self)
                 {
                     var context = this.LayerContext();
                     context.clearRect(0, 0, w, h);
-                    var foundation = null;
-                    for (var i = 0; i < _foundationList.length; ++i)
+                    _quarterTree.Clear();
+                    var foundationRender = null;
+                    var checkRenders = new Array();
+                    for (var i = 0; i < _foundationRenderList.length; ++i)
                     {
-                        foundation = _foundationList[i];
-                        foundation.Draw(context);
+                        foundationRender = _foundationRenderList[i];
+                        foundationRender.Foundation.Draw(context);
+                        _quarterTree.Insert(foundationRender);
+                        if (foundationRender.Speed && foundationRender.Speed > 0)
+                        {
+                            checkRenders.push(foundationRender);
+                        }
+                    }
+                    // 进行碰撞检测
+                    var checkRender = null;
+                    for (var j = 0; j < checkRenders.length; ++j)
+                    {
+                        checkRender = checkRenders[j];
+                        var collisionRenders = _quarterTree.Retrieve(checkRender);
+                        for (var k = 0; k < collisionRenders.length; ++k)
+                        {
+                            var collisionRender = collisionRenders[k];
+                            if (checkRender.GUID == collisionRender.GUID)
+                            {
+                                continue;
+                            }
+                            if (checkRender.ForceCheckConflict || collisionRender.ForceCheckConflict)
+                            {
+                                if (checkRender.CheckConflict(collisionRender))
+                                {
+                                    // 碰撞发生了!
+                                    checkRender.OnConflict(collisionRender);
+                                    if (!collisionRender.Speed || collisionRender.Speed <= 0)
+                                    {
+                                        collisionRender.OnConflict(checkRender);
+                                    }
+                                }
+                            }
+                        }
                     }
                     if (this.AutoStopRefresh)
                     {

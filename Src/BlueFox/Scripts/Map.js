@@ -56,6 +56,7 @@ function Load()
         for (var buildingIdx = 0; buildingIdx < buildingList.length; ++ buildingIdx)
         {
             var building = BlueFox.CreateBFMovableRender(buildingList[buildingIdx]);
+            building.ForceCheckConflict = true;
             building.Cast2Map(layer3);
             layer2.AddRender(building);
         }
