@@ -1200,7 +1200,10 @@ var BlueFox = (function (self)
                 if (!IsNullOrUndefined(mapLayer))
                 {
                     _mapLayer = mapLayer;
-                    _mapLayer.FoundationRenderList().push(this);
+                    if (_mapLayer.CanCheckConflict)
+                    {
+                        _mapLayer.FoundationRenderList().push(this);
+                    }
                     if (IsNullOrUndefined(this.FoundationCenter))
                     {
                         this.CenterLocation = _mapLayer.ConvertMapLocation(this.CenterLocation.X, this.CenterLocation.Y);
@@ -1814,6 +1817,8 @@ var BlueFox = (function (self)
 
         function BFCollisionLayerClass()
         {
+            this.CanCheckConflict = true;
+
             var _foundationRenderList = new Array();
 
             var _quarterTree = new QuarterTreeClass(0, 0, w, h);
