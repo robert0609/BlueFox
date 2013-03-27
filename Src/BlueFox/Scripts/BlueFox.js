@@ -346,6 +346,15 @@ var BlueFox = (function (self)
                 return this.GetContainedRenders();
             }
         };
+
+        this.Draw = function (context)
+        {
+            context.strokeRect(this.Location.X, this.Location.Y, this.Size.Width, this.Size.Height);
+            for (var i = 0; i < this.Subs.length; ++i)
+            {
+                this.Subs[i].Draw(context);
+            }
+        };
     }
 
     /**
@@ -1847,6 +1856,8 @@ var BlueFox = (function (self)
                             checkRenders.push(foundationRender);
                         }
                     }
+                    //TODO:test
+                    _quarterTree.Draw(context);
                     // 进行碰撞检测
                     var checkRender = null;
                     for (var j = 0; j < checkRenders.length; ++j)
