@@ -156,7 +156,7 @@ var BlueFox = (function (self)
 
         this.Location = new BFLocationClass(x, y);
         this.Size = new BFSizeClass(w, h);
-        // 该树节点包含的FoundationRender列表
+        // 该树节点全包含的FoundationRender列表
         this.FoundationRenders = new Array();
         // 该树节点包含的子节点
         this.Subs = new Array();
@@ -193,7 +193,7 @@ var BlueFox = (function (self)
         };
 
         /**
-         * 判断当前节点区域是否包含指定的地基
+         * 判断当前节点区域是否全包含指定的地基
          * @param foundationRender 地基
          * @return {Boolean}
          * @method
@@ -260,6 +260,7 @@ var BlueFox = (function (self)
                     if (this.Subs[i].Contains(foundationRender))
                     {
                         idx = i;
+                        break;
                     }
                 }
             }
@@ -335,11 +336,10 @@ var BlueFox = (function (self)
          */
         this.Retrieve = function (foundationRender)
         {
-            //TODO:这块有问题
             var i = this.GetIndex(foundationRender);
             if (i > -1)
             {
-                return this.Subs[i].Retrieve(foundationRender);
+                return this.FoundationRenders.concat(this.Subs[i].Retrieve(foundationRender));
             }
             else
             {
