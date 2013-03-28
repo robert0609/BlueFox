@@ -922,8 +922,11 @@ var BlueFox = (function (self)
                 }
                 else
                 {
-                    element = self.SelectRender;
-                    element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 4 });
+                    if (!IsNullOrUndefined(self.SelectRender))
+                    {
+                        element = self.SelectRender;
+                        element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 4 });
+                    }
                 }
             }
             catch (ex)
@@ -958,8 +961,11 @@ var BlueFox = (function (self)
                 {
                     if (e.button == 0)
                     {
-                        element = self.SelectRender;
-                        element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
+                        if (!IsNullOrUndefined(self.SelectRender))
+                        {
+                            element = self.SelectRender;
+                            element.OnStartMove({ TargetX : clickX, TargetY : clickY, Speed : 2 });
+                        }
                     }
                     else if (e.button == 2)
                     {
@@ -1496,6 +1502,9 @@ var BlueFox = (function (self)
             this.DirectionY = 0;
             // 元素在每帧移动的像素数
             this.Speed = 0;
+            // 元素在上一帧的地基坐标(FoundationCenter)
+            var _lastFoundationCenterX = 0;
+            var _lastFoundationCenterY = 0;
 
             this.ConflictedRenders = new Array();
 
@@ -1526,29 +1535,6 @@ var BlueFox = (function (self)
                 else if (ty < this.FoundationCenter.Y)
                 {
                     dy = -1;
-                }
-                // 如果当前Render已经与某些元素处于碰撞状态，那么先要判断移动的方向是远离还是靠近这些元素
-                this.Foundation.SetCenter(this.FoundationCenter.X + dx, this.FoundationCenter.Y + dy);
-                try
-                {
-                    var len = this.ConflictedRenders.length;
-                    if (len > 0)
-                    {
-                        var conflictRender = null;
-                        for (var i = 0; i < len; ++i)
-                        {
-                            conflictRender = this.ConflictedRenders[i];
-                            if (this.Foundation.CheckConflict(conflictRender.Foundation))
-                            {
-                                ret = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
                 }
                 if (ret)
                 {
@@ -1663,6 +1649,9 @@ var BlueFox = (function (self)
                 var tx = this.TargetX();
                 var ty = this.TargetY();
 
+                _lastFoundationCenterX = this.FoundationCenter.X;
+                _lastFoundationCenterY = this.FoundationCenter.Y;
+
                 if (this.DirectionX == 0)
                 {
                     bx = true;
@@ -1705,7 +1694,6 @@ var BlueFox = (function (self)
                     this.Speed = 0;
                     this.OnStopMove({ TargetX : tx, TargetY : ty });
                 }
-                this.ConflictedRenders.splice(0, this.ConflictedRenders.length);
             };
 
             /**
@@ -1751,25 +1739,17 @@ var BlueFox = (function (self)
              */
             this.OnConflict = function (foundationRender)
             {
-                var flg = false;
-                for (var i = 0; i < this.ConflictedRenders.length; ++i)
-                {
-                    if (this.ConflictedRenders[i].GUID == foundationRender.GUID)
-                    {
-                        flg = true;
-                        break;
-                    }
-                }
-                if (flg)
-                {
-                    return;
-                }
                 if (this.Speed > 0)
                 {
                     this.Speed = 0;
-                    this.OnStopMove({ TargetX : this.FoundationCenter.X, TargetY : this.FoundationCenter.Y });
+                    if (this.FoundationCenter.X != _lastFoundationCenterX || this.FoundationCenter.Y != _lastFoundationCenterY)
+                    {
+                        this.FoundationCenter.X = _lastFoundationCenterX;
+                        this.FoundationCenter.Y = _lastFoundationCenterY;
+                        this.ResetLocationByFoundationCenter();
+                        this.OnStopMove({ TargetX : this.FoundationCenter.X, TargetY : this.FoundationCenter.Y });
+                    }
                 }
-                this.ConflictedRenders.push(foundationRender);
             };
         }
 
