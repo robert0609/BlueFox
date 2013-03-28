@@ -49,6 +49,11 @@ var BlueFox = (function (self)
     {
         this.X = Number(x);
         this.Y = Number(y);
+
+        this.Copy = function ()
+        {
+            return new BFLocationClass(this.X, this.Y);
+        };
     }
 
     /**
@@ -313,7 +318,7 @@ var BlueFox = (function (self)
 
         /**
          * 返回当前节点包含的所有地基
-         * @return {List}
+         * @return {Array}
          * @method
          */
         this.GetContainedRenders = function ()
@@ -331,7 +336,7 @@ var BlueFox = (function (self)
         /**
          * 返回可能与指定的地基产生碰撞的地基列表
          * @param foundationRender 地基
-         * @return {List}
+         * @return {Array}
          * @method
          */
         this.Retrieve = function (foundationRender)
@@ -1381,6 +1386,30 @@ var BlueFox = (function (self)
             };
 
             /**
+             * 根据FoundationCenter重置当前render的位置
+             * @method
+             */
+            this.ResetLocationByFoundationCenter = function ()
+            {
+                if (IsNullOrUndefined(_mapLayer))
+                {
+                    return;
+                }
+                if (_mapLayer.CanTransform)
+                {
+                    this.CenterLocation = _mapLayer.ConvertMapLocation(this.FoundationCenter.X, this.FoundationCenter.Y);
+                }
+                else
+                {
+                    this.CenterLocation = this.FoundationCenter.Copy();
+                }
+                this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
+                this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
+                this.ZOrder = this.CLocation.Y + this.CSize.Height;
+                this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
+            };
+
+            /**
              * 将本元素的地基投影到地图图层上
              * @param mapLayer 地图图层
              * @method
@@ -1410,7 +1439,7 @@ var BlueFox = (function (self)
                     }
                     else
                     {
-                        this.FoundationCenter = this.CenterLocation;
+                        this.FoundationCenter = this.CenterLocation.Copy();
                     }
                     this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
                 }
@@ -1664,11 +1693,12 @@ var BlueFox = (function (self)
                     }
                 }
 
-                this.CenterLocation = this.MapLayer().ConvertMapLocation(this.FoundationCenter.X, this.FoundationCenter.Y);
-                this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
-                this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
-                this.ZOrder = this.CLocation.Y + this.CSize.Height;
-                this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
+                this.ResetLocationByFoundationCenter();
+//                this.CenterLocation = this.MapLayer().ConvertMapLocation(this.FoundationCenter.X, this.FoundationCenter.Y);
+//                this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
+//                this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
+//                this.ZOrder = this.CLocation.Y + this.CSize.Height;
+//                this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
 
                 if (bx && by)
                 {
@@ -1680,7 +1710,7 @@ var BlueFox = (function (self)
 
             /**
              * 开始移动事件
-             * @param e:{ TargetX : clickX, TargetY: clickY } 屏幕坐标
+             * @param e:{ TargetX : clickX, TargetY: clickY, Speed: speed } 屏幕坐标
              * @event
              */
             this.OnStartMove = function (e)
