@@ -1070,6 +1070,187 @@ var BlueFox = (function (self)
             }
         };
 
+        /**
+         * 检测与其他地基是否碰撞
+         * @param foundation 地基
+         * @return {Boolean}
+         * @method
+         */
+        this.CheckConflict = function (foundation)
+        {
+            var ret = false;
+            if (this.Flag == 'circle' && foundation.Flag == 'circle')
+            {
+                ret = ComputeCollisionCC(this.Radius, foundation.Radius, this.Center.X - foundation.Center.X, this.Center.Y - foundation.Center.Y);
+            }
+            else if (this.Flag == 'rectangle' && foundation.Flag == 'rectangle')
+            {
+                ret = ComputeCollisionRR(this, foundation);
+            }
+            else
+            {
+                if (this.Flag == 'circle')
+                {
+                    ret = ComputeCollisionCR(foundation.Width, foundation.Height, this.Radius, this.Center.X - foundation.Center.X, this.Center.Y - foundation.Center.Y);
+                }
+                else
+                {
+                    ret = ComputeCollisionCR(this.Width, this.Height, foundation.Radius, foundation.Center.X - this.Center.X, foundation.Center.Y - this.Center.Y);
+                }
+            }
+            return ret;
+        };
+
+        /**
+         * 检测圆形和矩形是否碰撞
+         * @param w 矩形长度
+         * @param h 矩形宽度
+         * @param r 圆形半径
+         * @param rx 圆形中心与矩形中心相对坐标
+         * @param ry 圆形中心与矩形中心相对坐标
+         * @return {Boolean}
+         * @method
+         */
+        function ComputeCollisionCR(w, h, r, rx, ry)
+        {
+            var dx = Math.min(rx, w * 0.5);
+            var dx1 = Math.max(dx, -w * 0.5);
+            var dy = Math.min(ry, h * 0.5);
+            var dy1 = Math.max(dy, -h * 0.5);
+            return (dx1 - rx) * (dx1 - rx) + (dy1 - ry) * (dy1 - ry) <= r * r;
+        }
+
+        /**
+         * 检测圆形和圆形是否碰撞
+         * @param r1 圆形1半径
+         * @param r2 圆形2半径
+         * @param rx 两个圆形圆心x坐标之间距离的绝对值
+         * @param ry 两个圆形圆心y坐标之间距离的绝对值
+         * @return {Boolean}
+         * @method
+         */
+        function ComputeCollisionCC(r1, r2, rx, ry)
+        {
+            return rx * rx + ry * ry <= (r1 + r2) * (r1 + r2);
+        }
+
+        /**
+         * 检测矩形和矩形是否碰撞
+         * @param fd1 矩形1(地基类)
+         * @param fd2 矩形2(地基类)
+         * @return {Boolean}
+         * @method
+         */
+        function ComputeCollisionRR(fd1, fd2)
+        {
+            /**
+             * 判断points中的点在斜率k，起点为oPoint，终点为ePoint的向量上的投影是否在起点和终点之间
+             * @param oPoint 起点
+             * @param ePoint 终点
+             * @param k 斜率
+             * @param points 判断的点列表
+             * @return {Boolean} True:在之间; False:之外
+             * @method
+             */
+            function Check(oPoint, ePoint, k, points)
+            {
+                /**
+                 * 计算点(m, n)在起点为(a, b)的斜率为k的向量上的投影点的公式:
+                 * x = (a * k * k + (n - b) * k + m) / (k * k + 1)
+                 * y = (n * k * k + (m - a) * k + b) / (k * k + 1)
+                 */
+
+                var finalRet = false;
+
+                var a = oPoint.X;
+                var b = oPoint.Y;
+                var m, n, x, y;
+                var min, max;
+                if (k == Infinity || k == -Infinity)
+                {
+                    min = Math.min(oPoint.Y, ePoint.Y);
+                    max = Math.max(oPoint.Y, ePoint.Y);
+                }
+                else
+                {
+                    min = Math.min(oPoint.X, ePoint.X);
+                    max = Math.max(oPoint.X, ePoint.X);
+                }
+
+                var chkRet;
+                var chkVal;
+                for (var i = 0; i < points.length; ++i)
+                {
+                    var row = points[i];
+                    for (var j = 0; j < row.length; ++j)
+                    {
+                        var point = row[j];
+                        m = point.X;
+                        n = point.Y;
+
+                        if (k == Infinity || k == -Infinity)
+                        {
+                            chkVal = n;
+                        }
+                        else
+                        {
+                            chkVal = (a * k * k + (n - b) * k + m) / (k * k + 1);
+                        }
+                        if (chkVal > max)
+                        {
+                            if (chkRet != undefined && chkRet != 1)
+                            {
+                                finalRet = true;
+                                break;
+                            }
+                            chkRet = 1;
+                        }
+                        else if (chkVal < min)
+                        {
+                            if (chkRet != undefined && chkRet != -1)
+                            {
+                                finalRet = true;
+                                break;
+                            }
+                            chkRet = -1;
+                        }
+                        else
+                        {
+                            chkRet = 0;
+                            finalRet = true;
+                            break;
+                        }
+                    }
+                    if (finalRet)
+                    {
+                        break;
+                    }
+                }
+                return finalRet;
+            }
+
+            if (!Check(fd1.RectPoints[0][0], fd1.RectPoints[0][1], fd1.KW, fd2.RectPoints))
+            {
+                return false;
+            }
+            if (!Check(fd1.RectPoints[0][0], fd1.RectPoints[1][0], fd1.KH, fd2.RectPoints))
+            {
+                return false;
+            }
+            if (fd1.KW != fd2.KW)
+            {
+                if (!Check(fd2.RectPoints[0][0], fd2.RectPoints[0][1], fd2.KW, fd1.RectPoints))
+                {
+                    return false;
+                }
+                if (!Check(fd2.RectPoints[0][0], fd2.RectPoints[1][0], fd2.KH, fd1.RectPoints))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         this.Draw = function (context)
         {
             if (this.Flag == 'circle')
@@ -1248,178 +1429,8 @@ var BlueFox = (function (self)
                     return false;
                 }
 
-                var ret = false;
-                if (this.Foundation.Flag == 'circle' && foundationRender.Foundation.Flag == 'circle')
-                {
-                    ret = ComputeCollisionCC(this.Foundation.Radius, foundationRender.Foundation.Radius, this.FoundationCenter.X - foundationRender.FoundationCenter.X, this.FoundationCenter.Y - foundationRender.FoundationCenter.Y);
-                }
-                else if (this.Foundation.Flag == 'rectangle' && foundationRender.Foundation.Flag == 'rectangle')
-                {
-                    ret = ComputeCollisionRR(this.Foundation, foundationRender.Foundation);
-                }
-                else
-                {
-                    if (this.Foundation.Flag == 'circle')
-                    {
-                        ret = ComputeCollisionCR(foundationRender.Foundation.Width, foundationRender.Foundation.Height, this.Foundation.Radius, this.FoundationCenter.X - foundationRender.FoundationCenter.X, this.FoundationCenter.Y - foundationRender.FoundationCenter.Y);
-                    }
-                    else
-                    {
-                        ret = ComputeCollisionCR(this.Foundation.Width, this.Foundation.Height, foundationRender.Foundation.Radius, foundationRender.FoundationCenter.X - this.FoundationCenter.X, foundationRender.FoundationCenter.Y - this.FoundationCenter.Y);
-                    }
-                }
-                return ret;
+                return this.Foundation.CheckConflict(foundationRender.Foundation);
             };
-
-            /**
-             * 检测圆形和矩形是否碰撞
-             * @param w 矩形长度
-             * @param h 矩形宽度
-             * @param r 圆形半径
-             * @param rx 圆形中心与矩形中心相对坐标
-             * @param ry 圆形中心与矩形中心相对坐标
-             * @return {Boolean}
-             * @method
-             */
-            function ComputeCollisionCR(w, h, r, rx, ry)
-            {
-                var dx = Math.min(rx, w * 0.5);
-                var dx1 = Math.max(dx, -w * 0.5);
-                var dy = Math.min(ry, h * 0.5);
-                var dy1 = Math.max(dy, -h * 0.5);
-                return (dx1 - rx) * (dx1 - rx) + (dy1 - ry) * (dy1 - ry) <= r * r;
-            }
-
-            /**
-             * 检测圆形和圆形是否碰撞
-             * @param r1 圆形1半径
-             * @param r2 圆形2半径
-             * @param rx 两个圆形圆心x坐标之间距离的绝对值
-             * @param ry 两个圆形圆心y坐标之间距离的绝对值
-             * @return {Boolean}
-             * @method
-             */
-            function ComputeCollisionCC(r1, r2, rx, ry)
-            {
-                return rx * rx + ry * ry <= (r1 + r2) * (r1 + r2);
-            }
-
-            /**
-             * 检测矩形和矩形是否碰撞
-             * @param fd1 矩形1(地基类)
-             * @param fd2 矩形2(地基类)
-             * @return {Boolean}
-             * @method
-             */
-            function ComputeCollisionRR(fd1, fd2)
-            {
-                /**
-                 * 判断points中的点在斜率k，起点为oPoint，终点为ePoint的向量上的投影是否在起点和终点之间
-                 * @param oPoint 起点
-                 * @param ePoint 终点
-                 * @param k 斜率
-                 * @param points 判断的点列表
-                 * @return {Boolean} True:在之间; False:之外
-                 * @method
-                 */
-                function Check(oPoint, ePoint, k, points)
-                {
-                    /**
-                     * 计算点(m, n)在起点为(a, b)的斜率为k的向量上的投影点的公式:
-                     * x = (a * k * k + (n - b) * k + m) / (k * k + 1)
-                     * y = (n * k * k + (m - a) * k + b) / (k * k + 1)
-                     */
-
-                    var finalRet = false;
-
-                    var a = oPoint.X;
-                    var b = oPoint.Y;
-                    var m, n, x, y;
-                    var min, max;
-                    if (k == Infinity || k == -Infinity)
-                    {
-                        min = Math.min(oPoint.Y, ePoint.Y);
-                        max = Math.max(oPoint.Y, ePoint.Y);
-                    }
-                    else
-                    {
-                        min = Math.min(oPoint.X, ePoint.X);
-                        max = Math.max(oPoint.X, ePoint.X);
-                    }
-
-                    var chkRet;
-                    var chkVal;
-                    for (var i = 0; i < points.length; ++i)
-                    {
-                        var row = points[i];
-                        for (var j = 0; j < row.length; ++j)
-                        {
-                            var point = row[j];
-                            m = point.X;
-                            n = point.Y;
-
-                            if (k == Infinity || k == -Infinity)
-                            {
-                                chkVal = n;
-                            }
-                            else
-                            {
-                                chkVal = (a * k * k + (n - b) * k + m) / (k * k + 1);
-                            }
-                            if (chkVal > max)
-                            {
-                                if (chkRet != undefined && chkRet != 1)
-                                {
-                                    finalRet = true;
-                                    break;
-                                }
-                                chkRet = 1;
-                            }
-                            else if (chkVal < min)
-                            {
-                                if (chkRet != undefined && chkRet != -1)
-                                {
-                                    finalRet = true;
-                                    break;
-                                }
-                                chkRet = -1;
-                            }
-                            else
-                            {
-                                chkRet = 0;
-                                finalRet = true;
-                                break;
-                            }
-                        }
-                        if (finalRet)
-                        {
-                            break;
-                        }
-                    }
-                    return finalRet;
-                }
-
-                if (!Check(fd1.RectPoints[0][0], fd1.RectPoints[0][1], fd1.KW, fd2.RectPoints))
-                {
-                    return false;
-                }
-                if (!Check(fd1.RectPoints[0][0], fd1.RectPoints[1][0], fd1.KH, fd2.RectPoints))
-                {
-                    return false;
-                }
-                if (fd1.KW != fd2.KW)
-                {
-                    if (!Check(fd2.RectPoints[0][0], fd2.RectPoints[0][1], fd2.KW, fd1.RectPoints))
-                    {
-                        return false;
-                    }
-                    if (!Check(fd2.RectPoints[0][0], fd2.RectPoints[1][0], fd2.KH, fd1.RectPoints))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
 
             /**
              * 碰撞事件
@@ -1457,32 +1468,67 @@ var BlueFox = (function (self)
             // 元素在每帧移动的像素数
             this.Speed = 0;
 
+            this.ConflictedRenders = new Array();
+
             /**
              * 设置移动的目标坐标
-             * @param x
-             * @param y
+             * @param tx
+             * @param ty
+             * @return {Boolean}
              * @method
              */
-            this.SetMoveTarget = function (x, y)
+            this.SetMoveTarget = function (tx, ty)
             {
-                _targetX = x;
-                _targetY = y;
-                if (_targetX > this.FoundationCenter.X)
+                var ret = true;
+                var dx = 0;
+                var dy = 0;
+                if (tx > this.FoundationCenter.X)
                 {
-                    this.DirectionX = 1;
+                    dx = 1;
                 }
-                else if (_targetX < this.FoundationCenter.X)
+                else if (tx < this.FoundationCenter.X)
                 {
-                    this.DirectionX = -1;
+                    dx = -1;
                 }
-                if (_targetY > this.FoundationCenter.Y)
+                if (ty > this.FoundationCenter.Y)
                 {
-                    this.DirectionY = 1;
+                    dy = 1;
                 }
-                else if (_targetY < this.FoundationCenter.Y)
+                else if (ty < this.FoundationCenter.Y)
                 {
-                    this.DirectionY = -1;
+                    dy = -1;
                 }
+                // 如果当前Render已经与某些元素处于碰撞状态，那么先要判断移动的方向是远离还是靠近这些元素
+                this.Foundation.SetCenter(this.FoundationCenter.X + dx, this.FoundationCenter.Y + dy);
+                try
+                {
+                    var len = this.ConflictedRenders.length;
+                    if (len > 0)
+                    {
+                        var conflictRender = null;
+                        for (var i = 0; i < len; ++i)
+                        {
+                            conflictRender = this.ConflictedRenders[i];
+                            if (this.Foundation.CheckConflict(conflictRender.Foundation))
+                            {
+                                ret = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
+                }
+                if (ret)
+                {
+                    _targetX = tx;
+                    _targetY = ty;
+                    this.DirectionX = dx;
+                    this.DirectionY = dy;
+                }
+                return ret;
             };
 
             /**
@@ -1629,11 +1675,12 @@ var BlueFox = (function (self)
                     this.Speed = 0;
                     this.OnStopMove({ TargetX : tx, TargetY : ty });
                 }
+                this.ConflictedRenders.splice(0, this.ConflictedRenders.length);
             };
 
             /**
              * 开始移动事件
-             * @param e:{ TargetX : clickX, TargetY: clickY }
+             * @param e:{ TargetX : clickX, TargetY: clickY } 屏幕坐标
              * @event
              */
             this.OnStartMove = function (e)
@@ -1651,13 +1698,15 @@ var BlueFox = (function (self)
                     x = tmp.X;
                     y = tmp.Y;
                 }
-                this.SetMoveTarget(x, y);
-                this.Speed = e.Speed;
+                if (this.SetMoveTarget(x, y))
+                {
+                    this.Speed = e.Speed;
+                }
             };
 
             /**
              * 停止移动事件
-             * @param e:{ TargetX : clickX, TargetY: clickY }
+             * @param e:{ TargetX : clickX, TargetY: clickY } 地图坐标
              * @event
              */
             this.OnStopMove = function (e)
@@ -1672,8 +1721,25 @@ var BlueFox = (function (self)
              */
             this.OnConflict = function (foundationRender)
             {
-                this.Speed = 0;
-                this.OnStopMove({ TargetX : this.FoundationCenter.X, TargetY : this.FoundationCenter.Y });
+                var flg = false;
+                for (var i = 0; i < this.ConflictedRenders.length; ++i)
+                {
+                    if (this.ConflictedRenders[i].GUID == foundationRender.GUID)
+                    {
+                        flg = true;
+                        break;
+                    }
+                }
+                if (flg)
+                {
+                    return;
+                }
+                if (this.Speed > 0)
+                {
+                    this.Speed = 0;
+                    this.OnStopMove({ TargetX : this.FoundationCenter.X, TargetY : this.FoundationCenter.Y });
+                }
+                this.ConflictedRenders.push(foundationRender);
             };
         }
 
