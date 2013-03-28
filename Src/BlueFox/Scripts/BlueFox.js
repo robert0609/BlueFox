@@ -1492,6 +1492,61 @@ var BlueFox = (function (self)
         //继承基本绘图单元
         BFMovableRenderClass.prototype = self.CreateBFFoundationRender(entity);
 
+        function CounterClass(xOry, cnt)
+        {
+            this.MoveFlagX = false;
+            this.MoveFlagY = false;
+            if (xOry == 'x')
+            {
+                this.MoveFlagX = true;
+            }
+            else if (xOry == 'y')
+            {
+                this.MoveFlagY = true;
+            }
+
+            var _cnt = 0;
+
+            this.Count = function ()
+            {
+                ++_cnt;
+                if (_cnt < cnt - 1)
+                {
+                    if (xOry == 'x')
+                    {
+                        this.MoveFlagY = false;
+                    }
+                    else if (xOry == 'y')
+                    {
+                        this.MoveFlagX = false;
+                    }
+                }
+                else if (_cnt == cnt - 1)
+                {
+                    if (xOry == 'x')
+                    {
+                        this.MoveFlagY = true;
+                    }
+                    else if (xOry == 'y')
+                    {
+                        this.MoveFlagX = true;
+                    }
+                }
+                else
+                {
+                    if (xOry == 'x')
+                    {
+                        this.MoveFlagY = false;
+                    }
+                    else if (xOry == 'y')
+                    {
+                        this.MoveFlagX = false;
+                    }
+                    _cnt = 0;
+                }
+            };
+        }
+
         function BFMovableRenderClass()
         {
             // 移动目标坐标(地图坐标)
@@ -1506,7 +1561,7 @@ var BlueFox = (function (self)
             var _lastFoundationCenterX = 0;
             var _lastFoundationCenterY = 0;
 
-            this.ConflictedRenders = new Array();
+            var _counter = null;
 
             /**
              * 设置移动的目标坐标
@@ -1517,7 +1572,6 @@ var BlueFox = (function (self)
              */
             this.SetMoveTarget = function (tx, ty)
             {
-                var ret = true;
                 var dx = 0;
                 var dy = 0;
                 if (tx > this.FoundationCenter.X)
@@ -1536,14 +1590,23 @@ var BlueFox = (function (self)
                 {
                     dy = -1;
                 }
-                if (ret)
+
+                var distanceX = Math.abs(tx - this.FoundationCenter.X);
+                var distanceY = Math.abs(ty - this.FoundationCenter.Y);
+                if (distanceX > distanceY)
                 {
-                    _targetX = tx;
-                    _targetY = ty;
-                    this.DirectionX = dx;
-                    this.DirectionY = dy;
+                    _counter = new CounterClass('x', Math.round(distanceX / distanceY));
                 }
-                return ret;
+                else
+                {
+                    _counter = new CounterClass('y', Math.round(distanceY / distanceX));
+                }
+
+                _targetX = tx;
+                _targetY = ty;
+                this.DirectionX = dx;
+                this.DirectionY = dy;
+                return true;
             };
 
             /**
@@ -1658,12 +1721,26 @@ var BlueFox = (function (self)
                 }
                 else
                 {
-                    this.FoundationCenter.X += this.DirectionX * this.Speed;
-                    bx = this.CheckExceedX();
-                    if (bx)
+                    if (this.DirectionY != 0)
                     {
-                        this.FoundationCenter.X = tx;
-                        this.DirectionX = 0;
+                        if (_counter.MoveFlagX)
+                        {
+                            this.FoundationCenter.X += this.DirectionX * this.Speed;
+                            bx = this.CheckExceedX();
+                            if (bx)
+                            {
+                                this.FoundationCenter.X = tx;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.FoundationCenter.X += this.DirectionX * this.Speed;
+                        bx = this.CheckExceedX();
+                        if (bx)
+                        {
+                            this.FoundationCenter.X = tx;
+                        }
                     }
                 }
 
@@ -1673,21 +1750,39 @@ var BlueFox = (function (self)
                 }
                 else
                 {
-                    this.FoundationCenter.Y += this.DirectionY * this.Speed;
-                    by = this.CheckExceedY();
-                    if (by)
+                    if (this.DirectionX != 0)
                     {
-                        this.FoundationCenter.Y = ty;
-                        this.DirectionY = 0;
+                        if (_counter.MoveFlagY)
+                        {
+                            this.FoundationCenter.Y += this.DirectionY * this.Speed;
+                            by = this.CheckExceedY();
+                            if (by)
+                            {
+                                this.FoundationCenter.Y = ty;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.FoundationCenter.Y += this.DirectionY * this.Speed;
+                        by = this.CheckExceedY();
+                        if (by)
+                        {
+                            this.FoundationCenter.Y = ty;
+                        }
                     }
                 }
 
+                if (bx)
+                {
+                    this.DirectionX = 0;
+                }
+                if (by)
+                {
+                    this.DirectionY = 0;
+                }
+                _counter.Count();
                 this.ResetLocationByFoundationCenter();
-//                this.CenterLocation = this.MapLayer().ConvertMapLocation(this.FoundationCenter.X, this.FoundationCenter.Y);
-//                this.CLocation.X = this.Center2CLocation('x', this.CenterLocation.X);
-//                this.CLocation.Y = this.Center2CLocation('y', this.CenterLocation.Y);
-//                this.ZOrder = this.CLocation.Y + this.CSize.Height;
-//                this.Foundation.SetCenter(this.FoundationCenter.X, this.FoundationCenter.Y);
 
                 if (bx && by)
                 {
