@@ -1507,10 +1507,14 @@ var BlueFox = (function (self)
 
             var _cnt = 0;
 
+            /**
+             * 在Update每一帧元素的位置信息之前，先调用此方法进行计数
+             * @method
+             */
             this.Count = function ()
             {
                 ++_cnt;
-                if (_cnt < cnt - 1)
+                if (_cnt < cnt)
                 {
                     if (xOry == 'x')
                     {
@@ -1521,7 +1525,7 @@ var BlueFox = (function (self)
                         this.MoveFlagX = false;
                     }
                 }
-                else if (_cnt == cnt - 1)
+                else
                 {
                     if (xOry == 'x')
                     {
@@ -1530,17 +1534,6 @@ var BlueFox = (function (self)
                     else if (xOry == 'y')
                     {
                         this.MoveFlagX = true;
-                    }
-                }
-                else
-                {
-                    if (xOry == 'x')
-                    {
-                        this.MoveFlagY = false;
-                    }
-                    else if (xOry == 'y')
-                    {
-                        this.MoveFlagX = false;
                     }
                     _cnt = 0;
                 }
@@ -1595,11 +1588,11 @@ var BlueFox = (function (self)
                 var distanceY = Math.abs(ty - this.FoundationCenter.Y);
                 if (distanceX > distanceY)
                 {
-                    _counter = new CounterClass('x', Math.round(distanceX / distanceY));
+                    _counter = new CounterClass('x', Math.floor(distanceX / distanceY));
                 }
                 else
                 {
-                    _counter = new CounterClass('y', Math.round(distanceY / distanceX));
+                    _counter = new CounterClass('y', Math.floor(distanceY / distanceX));
                 }
 
                 _targetX = tx;
@@ -1715,6 +1708,7 @@ var BlueFox = (function (self)
                 _lastFoundationCenterX = this.FoundationCenter.X;
                 _lastFoundationCenterY = this.FoundationCenter.Y;
 
+                _counter.Count();
                 if (this.DirectionX == 0)
                 {
                     bx = true;
@@ -1781,7 +1775,6 @@ var BlueFox = (function (self)
                 {
                     this.DirectionY = 0;
                 }
-                _counter.Count();
                 this.ResetLocationByFoundationCenter();
 
                 if (bx && by)
