@@ -799,6 +799,9 @@ var BlueFox = (function (self)
         _bufferContext.fillStyle = 'red';
         _bufferContext.font = '20px Lucida Console';
 
+        // 要显示的Canvas起始的位置，(屏幕坐标)
+        var _drawLocation = new BFLocationClass(0, 0);
+
         /**
          * 重绘处理
          * @method
@@ -809,6 +812,7 @@ var BlueFox = (function (self)
             var dt1 = (new Date()).getTime();
 
             _bufferContext.clearRect(0, 0, w, h);
+            this.OnUpdate();
             _layerList = _layerList.sort(function (a, b)
             {
                 return a.Index - b.Index;
@@ -820,7 +824,7 @@ var BlueFox = (function (self)
                 layer = _layerList[i];
                 layer.Draw();
                 layerCanvas = layer.LayerCanvas();
-                _bufferContext.drawImage(layerCanvas, 0, 0, w, h, 0, 0, w, h);
+                _bufferContext.drawImage(layerCanvas, _drawLocation.X, _drawLocation.Y, w, h, 0, 0, w, h);
             }
 
             // 获取当前时刻
@@ -828,6 +832,9 @@ var BlueFox = (function (self)
 
             DisplayFPS(dt1, dt2);
         };
+
+        this.OnUpdate = function ()
+        {};
 
         function DisplayFPS(dt1, dt2)
         {
@@ -1018,6 +1025,17 @@ var BlueFox = (function (self)
             CancelDefault(e);
             CancelEventFlow(e);
         }
+
+        this.SetDrawLocation = function (x, y)
+        {
+            _drawLocation.X = x;
+            _drawLocation.Y = y;
+        };
+
+        this.DrawLocation = function ()
+        {
+            return _drawLocation;
+        };
     }
 
     /**
@@ -1297,6 +1315,60 @@ var BlueFox = (function (self)
     }
 
     /**
+     * 更新元素位置信息的控制计数器
+     * @param xOry
+     * @param cnt
+     * @constructor
+     */
+    function BFCounterClass(xOry, cnt)
+    {
+        this.MoveFlagX = false;
+        this.MoveFlagY = false;
+        if (xOry == 'x')
+        {
+            this.MoveFlagX = true;
+        }
+        else if (xOry == 'y')
+        {
+            this.MoveFlagY = true;
+        }
+
+        var _cnt = 0;
+
+        /**
+         * 在Update每一帧元素的位置信息之前，先调用此方法进行计数
+         * @method
+         */
+        this.Count = function ()
+        {
+            ++_cnt;
+            if (_cnt < cnt)
+            {
+                if (xOry == 'x')
+                {
+                    this.MoveFlagY = false;
+                }
+                else if (xOry == 'y')
+                {
+                    this.MoveFlagX = false;
+                }
+            }
+            else
+            {
+                if (xOry == 'x')
+                {
+                    this.MoveFlagY = true;
+                }
+                else if (xOry == 'y')
+                {
+                    this.MoveFlagX = true;
+                }
+                _cnt = 0;
+            }
+        };
+    }
+
+    /**
      * 创建画布上的绘制元素
      * @param entity,格式:{"CX": 100, "CY": 458, "CWidth": 96, "CHeight": 128, "SX": 0, "SY": 0, "SWidth": 96, "SHeight": 128, "ZOrder": 586, "ImageFilePath": "./Resource/Img/tree.png"}
      * @return {BFRenderClass}
@@ -1492,54 +1564,6 @@ var BlueFox = (function (self)
         //继承基本绘图单元
         BFMovableRenderClass.prototype = self.CreateBFFoundationRender(entity);
 
-        function CounterClass(xOry, cnt)
-        {
-            this.MoveFlagX = false;
-            this.MoveFlagY = false;
-            if (xOry == 'x')
-            {
-                this.MoveFlagX = true;
-            }
-            else if (xOry == 'y')
-            {
-                this.MoveFlagY = true;
-            }
-
-            var _cnt = 0;
-
-            /**
-             * 在Update每一帧元素的位置信息之前，先调用此方法进行计数
-             * @method
-             */
-            this.Count = function ()
-            {
-                ++_cnt;
-                if (_cnt < cnt)
-                {
-                    if (xOry == 'x')
-                    {
-                        this.MoveFlagY = false;
-                    }
-                    else if (xOry == 'y')
-                    {
-                        this.MoveFlagX = false;
-                    }
-                }
-                else
-                {
-                    if (xOry == 'x')
-                    {
-                        this.MoveFlagY = true;
-                    }
-                    else if (xOry == 'y')
-                    {
-                        this.MoveFlagX = true;
-                    }
-                    _cnt = 0;
-                }
-            };
-        }
-
         function BFMovableRenderClass()
         {
             // 移动目标坐标(地图坐标)
@@ -1588,11 +1612,11 @@ var BlueFox = (function (self)
                 var distanceY = Math.abs(ty - this.FoundationCenter.Y);
                 if (distanceX > distanceY)
                 {
-                    _counter = new CounterClass('x', Math.floor(distanceX / distanceY));
+                    _counter = new BFCounterClass('x', Math.floor(distanceX / distanceY));
                 }
                 else
                 {
-                    _counter = new CounterClass('y', Math.floor(distanceY / distanceX));
+                    _counter = new BFCounterClass('y', Math.floor(distanceY / distanceX));
                 }
 
                 _targetX = tx;
@@ -2063,6 +2087,46 @@ var BlueFox = (function (self)
     self.CreateBFCanvas = function (w, h)
     {
         self.GlobalBFCanvas = new BFCanvasClass(w, h);
+        return self.GlobalBFCanvas;
+    };
+
+    self.CreateBFCameraCanvas = function (w, h)
+    {
+        BFCameraCanvasClass.prototype = new BFCanvasClass(w, h);
+
+        function BFCameraCanvasClass()
+        {
+            var _targetX = 0;
+            var _targetY = 0;
+            var _speed = 0;
+
+            var _counter = null;
+
+            this.OnUpdate = function ()
+            {};
+
+            /**
+             * 开始移动事件
+             * @param e:{ TargetX : clickX, TargetY: clickY, Speed: speed } 屏幕坐标
+             * @event
+             */
+            this.OnStartMove = function (e)
+            {
+                _targetX = e.TargetX;
+                _targetY = e.TargetY;
+                _speed = e.Speed;
+            };
+
+            /**
+             * 停止移动事件
+             * @param e:{ TargetX : clickX, TargetY: clickY } 屏幕坐标
+             * @event
+             */
+            this.OnStopMove = function (e)
+            {};
+        }
+
+        self.GlobalBFCanvas = new BFCameraCanvasClass();
         return self.GlobalBFCanvas;
     };
 

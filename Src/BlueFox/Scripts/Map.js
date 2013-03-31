@@ -28,7 +28,7 @@ function Load()
         var layer1 = BlueFox.CreateBFTransformLayer(1280, 1920);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
-        var layer2 = BlueFox.CreateBFLayer(bodyWidth, bodyHeight);
+        var layer2 = BlueFox.CreateBFLayer(layer1.Width(), layer1.Height());
         layer2.Index = 2;
         layer2.StrokeStyle('orange');
         var layer3 = BlueFox.CreateBFCollisionLayer(layer1.Width(), layer1.Height());
