@@ -25,15 +25,15 @@ function Load()
 
         var BFCanvas = BlueFox.CreateBFMovableCanvas(bodyWidth, bodyHeight);
 
-        BlueFox.MapSize.Width = 1280;
-        BlueFox.MapSize.Height = 1920;
-        var layer1 = BlueFox.CreateBFTransformLayer(1280, 1920);
+        BlueFox.MapSize.Width = 6400;
+        BlueFox.MapSize.Height = 6400;
+        var layer1 = BlueFox.CreateBFTransformLayer(BlueFox.MapSize.Width, BlueFox.MapSize.Height);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
-        var layer2 = BlueFox.CreateBFLayer(layer1.Width(), layer1.Height());
+        var layer2 = BlueFox.CreateBFLayer(BlueFox.MapSize.Width, BlueFox.MapSize.Height);
         layer2.Index = 2;
         layer2.StrokeStyle('orange');
-        var layer3 = BlueFox.CreateBFCollisionLayer(layer1.Width(), layer1.Height());
+        var layer3 = BlueFox.CreateBFCollisionLayer(BlueFox.MapSize.Width, BlueFox.MapSize.Height);
         layer3.Index = 1;
         layer3.StrokeStyle('red');
 
