@@ -43,12 +43,12 @@ function Load()
 
         layer1.Scale(1, 0.4);
         layer1.Rotate(Math.PI / 4);
-        layer1.Translate(0, -960);
+        layer1.Translate(3200, -3200);
         layer1.Transform();
 
         layer3.Scale(1, 0.4);
         layer3.Rotate(Math.PI / 4);
-        layer3.Translate(0, -960);
+        layer3.Translate(3200, -3200);
         layer3.Transform();
         for (var mapCellIdx = 0; mapCellIdx < mapList.length; ++mapCellIdx)
         {
@@ -64,6 +64,8 @@ function Load()
         }
 
         BlueFox.Run();
+
+        BFCanvas.SetCenterLocation(building.CenterLocation.X, building.CenterLocation.Y);
     }
     catch (ex)
     {
