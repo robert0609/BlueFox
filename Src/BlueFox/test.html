@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8" />
+    <script type="text/javascript" src="./Scripts/BlueFox.js"></script>
     <script type="text/javascript">
         function getValue()
         {
@@ -11,7 +12,29 @@
 
         function Load1()
         {
-            alert(Math.round(1 / 0));
+            var layer1 = BlueFox.CreateBFTransformLayer(128, 192);
+            layer1.Scale(1, 1);
+            layer1.Rotate(Math.PI / 4);
+            layer1.Translate(64, 0);
+            layer1.Transform();
+            var loc1 = layer1.ConvertMapLocation(30, 50);
+            var loc2 = layer1.ConvertMapLocation(50, 30);
+            var loc3 = layer1.ConvertMapLocation(70, 50);
+            var loc4 = layer1.ConvertMapLocation(50, 70);
+            alert(loc1.X + ', ' + loc1.Y);
+            alert(loc2.X + ', ' + loc2.Y);
+            alert(loc3.X + ', ' + loc3.Y);
+            alert(loc4.X + ', ' + loc4.Y);
+            document.body.appendChild(layer1.LayerCanvas());
+            var context = layer1.LayerContext();
+            context.beginPath();
+            context.moveTo(30, 50);
+            context.lineTo(50, 30);
+            context.lineTo(70, 50);
+            context.lineTo(50, 70);
+            //context.lineTo(0, 960);
+            context.closePath();
+            context.stroke();
         }
 
         function Load()
