@@ -23,8 +23,10 @@ function Load()
         var bodyWidth = document.body.clientWidth;
         var bodyHeight = document.body.clientHeight;
 
-        var BFCanvas = BlueFox.CreateBFCanvas(bodyWidth, bodyHeight);
+        var BFCanvas = BlueFox.CreateBFMovableCanvas(bodyWidth, bodyHeight);
 
+        BlueFox.MapSize.Width = 1280;
+        BlueFox.MapSize.Height = 1920;
         var layer1 = BlueFox.CreateBFTransformLayer(1280, 1920);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;

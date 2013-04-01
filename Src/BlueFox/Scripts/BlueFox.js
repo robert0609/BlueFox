@@ -33,6 +33,8 @@ var BlueFox = (function (self)
         self.DragedRender = null;
         // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
         self.CurrentTime = 0;
+        // 地图的尺寸
+        self.MapSize = new BFSizeClass(0, 0);
     }
     catch (ex)
     {
@@ -799,7 +801,7 @@ var BlueFox = (function (self)
         _bufferContext.fillStyle = 'red';
         _bufferContext.font = '20px Lucida Console';
 
-        // 要显示的Canvas起始的位置，(屏幕坐标)
+        // 要显示的Canvas起始的位置，(左上屏幕坐标)
         var _drawLocation = new BFLocationClass(0, 0);
 
         /**
@@ -920,12 +922,16 @@ var BlueFox = (function (self)
         {
             try
             {
-                var clickX = e.pageX - this.offsetLeft;
-                var clickY = e.pageY - this.offsetTop;
+                var clickX = e.pageX - this.offsetLeft + self.GlobalBFCanvas.DrawLocation().X;
+                var clickY = e.pageY - this.offsetTop + self.GlobalBFCanvas.DrawLocation().Y;
                 var element = innerFindRender(clickX, clickY);
                 if (element != null)
                 {
                     element.OnDoubleClick({ ClickX : clickX, ClickY : clickY });
+                    if (element.HaveFoundation)
+                    {
+                        self.GlobalBFCanvas.OnStartMove({ TargetX : element.CenterLocation.X, TargetY : element.CenterLocation.Y, Speed : 8 });
+                    }
                 }
                 else
                 {
@@ -950,8 +956,8 @@ var BlueFox = (function (self)
         {
             try
             {
-                var clickX = e.pageX - this.offsetLeft;
-                var clickY = e.pageY - this.offsetTop;
+                var clickX = e.pageX - this.offsetLeft + self.GlobalBFCanvas.DrawLocation().X;
+                var clickY = e.pageY - this.offsetTop + self.GlobalBFCanvas.DrawLocation().Y;
                 var element = innerFindRender(clickX, clickY);
                 if (element != null)
                 {
@@ -962,6 +968,10 @@ var BlueFox = (function (self)
                     else if (e.button == 2)
                     {
                         element.OnRightMouseDown({ ClickX : clickX, ClickY : clickY });
+                    }
+                    if (element.HaveFoundation)
+                    {
+                        self.GlobalBFCanvas.OnStartMove({ TargetX : element.CenterLocation.X, TargetY : element.CenterLocation.Y, Speed : 8 });
                     }
                 }
                 else
@@ -994,8 +1004,8 @@ var BlueFox = (function (self)
         {
             try
             {
-                var clickX = e.pageX - this.offsetLeft;
-                var clickY = e.pageY - this.offsetTop;
+                var clickX = e.pageX - this.offsetLeft + self.GlobalBFCanvas.DrawLocation().X;
+                var clickY = e.pageY - this.offsetTop + self.GlobalBFCanvas.DrawLocation().Y;
                 self.DragedRender = null;
     //            var element = innerFindRender(clickX, clickY);
     //            if (element != null)
@@ -1627,43 +1637,23 @@ var BlueFox = (function (self)
             };
 
             /**
-             * 判断X方向是否移动到了目标坐标
-             * @return {Boolean}
-             * @method
-             */
-            this.CheckExceedX = function ()
-            {
-                return this.CheckExceed('x');
-            };
-
-            /**
-             * 判断Y方向是否移动到了目标坐标
-             * @return {Boolean}
-             * @method
-             */
-            this.CheckExceedY = function ()
-            {
-                return this.CheckExceed('y');
-            };
-
-            /**
              * 判断是否移动到了目标坐标
              * @param 方向标志
              * @return {Boolean}
              * @method
              */
-            this.CheckExceed = function (dFlag)
+            this.CheckExceed = function (xOry)
             {
                 var t = 0;
                 var c = 0;
                 var d = 0;
-                if (dFlag == 'x')
+                if (xOry == 'x')
                 {
                     t = _targetX;
                     c = this.FoundationCenter.X;
                     d = this.DirectionX;
                 }
-                else if (dFlag == 'y')
+                else if (xOry == 'y')
                 {
                     t = _targetY;
                     c = this.FoundationCenter.Y;
@@ -1718,6 +1708,36 @@ var BlueFox = (function (self)
                 return _targetY;
             };
 
+            /**
+             * 移动中心坐标
+             * @param xOry
+             * @return {Boolean}
+             * @method
+             */
+            this.MoveFoundationCenter = function (xOry)
+            {
+                var b = false;
+                if (xOry == 'x')
+                {
+                    this.FoundationCenter.X += this.DirectionX * this.Speed;
+                    b = this.CheckExceed('x');
+                    if (b)
+                    {
+                        this.FoundationCenter.X = this.TargetX();
+                    }
+                }
+                else
+                {
+                    this.FoundationCenter.Y += this.DirectionY * this.Speed;
+                    b = this.CheckExceed('y');
+                    if (b)
+                    {
+                        this.FoundationCenter.Y = this.TargetY();
+                    }
+                }
+                return b;
+            };
+
             this.OnUpdate = function ()
             {
                 if (this.Speed == 0)
@@ -1743,22 +1763,12 @@ var BlueFox = (function (self)
                     {
                         if (_counter.MoveFlagX)
                         {
-                            this.FoundationCenter.X += this.DirectionX * this.Speed;
-                            bx = this.CheckExceedX();
-                            if (bx)
-                            {
-                                this.FoundationCenter.X = tx;
-                            }
+                            this.MoveFoundationCenter('x');
                         }
                     }
                     else
                     {
-                        this.FoundationCenter.X += this.DirectionX * this.Speed;
-                        bx = this.CheckExceedX();
-                        if (bx)
-                        {
-                            this.FoundationCenter.X = tx;
-                        }
+                        this.MoveFoundationCenter('x');
                     }
                 }
 
@@ -1772,22 +1782,12 @@ var BlueFox = (function (self)
                     {
                         if (_counter.MoveFlagY)
                         {
-                            this.FoundationCenter.Y += this.DirectionY * this.Speed;
-                            by = this.CheckExceedY();
-                            if (by)
-                            {
-                                this.FoundationCenter.Y = ty;
-                            }
+                            this.MoveFoundationCenter('y');
                         }
                     }
                     else
                     {
-                        this.FoundationCenter.Y += this.DirectionY * this.Speed;
-                        by = this.CheckExceedY();
-                        if (by)
-                        {
-                            this.FoundationCenter.Y = ty;
-                        }
+                        this.MoveFoundationCenter('y');
                     }
                 }
 
@@ -2090,20 +2090,312 @@ var BlueFox = (function (self)
         return self.GlobalBFCanvas;
     };
 
-    self.CreateBFCameraCanvas = function (w, h)
+    self.CreateBFMovableCanvas = function (w, h)
     {
-        BFCameraCanvasClass.prototype = new BFCanvasClass(w, h);
+        BFMovableCanvasClass.prototype = new BFCanvasClass(w, h);
 
-        function BFCameraCanvasClass()
+        function BFMovableCanvasClass()
         {
+            this.CanMove = true;
+
             var _targetX = 0;
             var _targetY = 0;
             var _speed = 0;
 
+            var _directionX = 0;
+            var _directionY = 0;
+
+            var _offsetX = w / 2;
+            var _offsetY = h * 0.618;
+            this.CenterLocation = new BFLocationClass(this.DrawLocation().X + _offsetX, this.DrawLocation().Y + _offsetY);
+
             var _counter = null;
 
+            /**
+             * 设置移动的目标坐标
+             * @param tx
+             * @param ty
+             * @return {Boolean}
+             * @method
+             */
+            this.SetMoveTarget = function (tx, ty)
+            {
+                var dx = 0;
+                var dy = 0;
+                if (tx > this.CenterLocation.X)
+                {
+                    dx = 1;
+                }
+                else if (tx < this.CenterLocation.X)
+                {
+                    dx = -1;
+                }
+                if (ty > this.CenterLocation.Y)
+                {
+                    dy = 1;
+                }
+                else if (ty < this.CenterLocation.Y)
+                {
+                    dy = -1;
+                }
+
+                var distanceX = Math.abs(tx - this.CenterLocation.X);
+                var distanceY = Math.abs(ty - this.CenterLocation.Y);
+                if (distanceX > distanceY)
+                {
+                    _counter = new BFCounterClass('x', Math.floor(distanceX / distanceY));
+                }
+                else
+                {
+                    _counter = new BFCounterClass('y', Math.floor(distanceY / distanceX));
+                }
+
+                _targetX = tx;
+                _targetY = ty;
+                _directionX = dx;
+                _directionY = dy;
+            };
+
+            /**
+             * 判断是否移动到了目标坐标
+             * @param 方向标志
+             * @return {Boolean}
+             * @method
+             */
+            this.CheckExceed = function (xOry)
+            {
+                var t = 0;
+                var c = 0;
+                var d = 0;
+                if (xOry == 'x')
+                {
+                    t = _targetX;
+                    c = this.CenterLocation.X;
+                    d = _directionX;
+                }
+                else if (xOry == 'y')
+                {
+                    t = _targetY;
+                    c = this.CenterLocation.Y;
+                    d = _directionY;
+                }
+
+                if (d > 0)
+                {
+                    if (c >= t)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (d < 0)
+                {
+                    if (c <= t)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            };
+
+            /**
+             * 判断是否移动到了边界
+             * @param xOry
+             * @return {Boolean}
+             * @method
+             */
+            this.CheckBorder = function (xOry)
+            {
+                var t = 0;
+                var c = 0;
+                var l = 0
+                var d = 0;
+                if (xOry == 'x')
+                {
+                    t = self.MapSize.Width;
+                    c = this.DrawLocation().X;
+                    l = w;
+                    d = _directionX;
+                }
+                else if (xOry == 'y')
+                {
+                    t = self.MapSize.Height;
+                    c = this.DrawLocation().Y;
+                    l = h;
+                    d = _directionY;
+                }
+
+                if (d > 0)
+                {
+                    if (c + l >= t)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (d < 0)
+                {
+                    if (c <= 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            };
+
+            /**
+             * 移动中心坐标
+             * @param xOry
+             * @return {Boolean}
+             * @method
+             */
+            this.MoveCenter = function (xOry)
+            {
+                var b = false;
+                if (xOry == 'x')
+                {
+                    this.CenterLocation.X += _directionX * _speed;
+                    b = this.CheckBorder('x');
+                    if (b)
+                    {
+                        if (_directionX > 0)
+                        {
+                            this.CenterLocation.X = self.MapSize.Width - _offsetX;
+                        }
+                        else if (_directionX < 0)
+                        {
+                            this.CenterLocation.X = _offsetX;
+                        }
+                    }
+                    else
+                    {
+                        b = this.CheckExceed('x');
+                        if (b)
+                        {
+                            this.CenterLocation.X = _targetX;
+                        }
+                    }
+                }
+                else
+                {
+                    this.CenterLocation.Y += _directionY * _speed;
+                    b = this.CheckBorder('y');
+                    if (b)
+                    {
+                        if (_directionY > 0)
+                        {
+                            this.CenterLocation.Y = self.MapSize.Height - h + _offsetY;
+                        }
+                        else if (_directionY < 0)
+                        {
+                            this.CenterLocation.Y = _offsetY;
+                        }
+                    }
+                    else
+                    {
+                        b = this.CheckExceed('y');
+                        if (b)
+                        {
+                            this.CenterLocation.Y = _targetY;
+                        }
+                    }
+                }
+                return b;
+            };
+
             this.OnUpdate = function ()
-            {};
+            {
+                if (_speed == 0)
+                {
+                    return;
+                }
+                var bx = false;
+                var by = false;
+                var tx = _targetX;
+                var ty = _targetY;
+
+                _counter.Count();
+                if (_directionX == 0)
+                {
+                    bx = true;
+                }
+                else
+                {
+                    if (_directionY != 0)
+                    {
+                        if (_counter.MoveFlagX)
+                        {
+                            bx = this.MoveCenter('x');
+                        }
+                    }
+                    else
+                    {
+                        bx = this.MoveCenter('x');
+                    }
+                }
+
+                if (_directionY == 0)
+                {
+                    by = true;
+                }
+                else
+                {
+                    if (_directionX != 0)
+                    {
+                        if (_counter.MoveFlagY)
+                        {
+                            by = this.MoveCenter('y');
+                        }
+                    }
+                    else
+                    {
+                        by = this.MoveCenter('y');
+                    }
+                }
+
+                if (bx)
+                {
+                    _directionX = 0;
+                }
+                if (by)
+                {
+                    _directionY = 0;
+                }
+                this.SetDrawLocationByCenter();
+
+                if (bx && by)
+                {
+                    _speed = 0;
+                    this.OnStopMove({ TargetX : tx, TargetY : ty });
+                }
+            };
+
+            this.SetDrawLocationByCenter = function ()
+            {
+                var x = this.CenterLocation.X - _offsetX;
+                var y = this.CenterLocation.Y - _offsetY;
+                this.SetDrawLocation(x, y);
+            };
 
             /**
              * 开始移动事件
@@ -2112,8 +2404,7 @@ var BlueFox = (function (self)
              */
             this.OnStartMove = function (e)
             {
-                _targetX = e.TargetX;
-                _targetY = e.TargetY;
+                this.SetMoveTarget(e.TargetX, e.TargetY);
                 _speed = e.Speed;
             };
 
@@ -2126,7 +2417,7 @@ var BlueFox = (function (self)
             {};
         }
 
-        self.GlobalBFCanvas = new BFCameraCanvasClass();
+        self.GlobalBFCanvas = new BFMovableCanvasClass();
         return self.GlobalBFCanvas;
     };
 
@@ -2179,8 +2470,8 @@ var BlueFox = (function (self)
             try
             {
                 self.GlobalBFCanvas.BufferCanvas().onmousemove = null;
-                var clickX = e.pageX - this.offsetLeft;
-                var clickY = e.pageY - this.offsetTop;
+                var clickX = e.pageX - this.offsetLeft + self.GlobalBFCanvas.DrawLocation().X;
+                var clickY = e.pageY - this.offsetTop + self.GlobalBFCanvas.DrawLocation().Y;
                 if (self.DragedRender == null)
                 {
                     var element = self.GlobalBFCanvas.FindRender(clickX, clickY);
