@@ -56,6 +56,16 @@ var BlueFox = (function (self)
         {
             return new BFLocationClass(this.X, this.Y);
         };
+
+        this.Equal = function (location)
+        {
+            var b = false;
+            if (this.X == location.X && this.Y == location.Y)
+            {
+                b = true;
+            }
+            return b;
+        };
     }
 
     /**
@@ -928,7 +938,7 @@ var BlueFox = (function (self)
                 if (element != null)
                 {
                     element.OnDoubleClick({ ClickX : clickX, ClickY : clickY });
-                    if (element.HaveFoundation)
+                    if (self.GlobalBFCanvas.CanMove && element.HaveFoundation)
                     {
                         self.GlobalBFCanvas.OnStartMove({ TargetX : element.CenterLocation.X, TargetY : element.CenterLocation.Y, Speed : 8 });
                     }
@@ -969,7 +979,7 @@ var BlueFox = (function (self)
                     {
                         element.OnRightMouseDown({ ClickX : clickX, ClickY : clickY });
                     }
-                    if (element.HaveFoundation)
+                    if (self.GlobalBFCanvas.CanMove && element.HaveFoundation)
                     {
                         self.GlobalBFCanvas.OnStartMove({ TargetX : element.CenterLocation.X, TargetY : element.CenterLocation.Y, Speed : 8 });
                     }
@@ -1035,12 +1045,6 @@ var BlueFox = (function (self)
             CancelDefault(e);
             CancelEventFlow(e);
         }
-
-        this.SetDrawLocation = function (x, y)
-        {
-            _drawLocation.X = x;
-            _drawLocation.Y = y;
-        };
 
         this.DrawLocation = function ()
         {
@@ -1587,6 +1591,8 @@ var BlueFox = (function (self)
             // 元素在上一帧的地基坐标(FoundationCenter)
             var _lastFoundationCenterX = 0;
             var _lastFoundationCenterY = 0;
+            // 该元素是否位于屏幕(摄像机)中央
+            var _middle = false;
 
             var _counter = null;
 
@@ -1800,6 +1806,17 @@ var BlueFox = (function (self)
                     this.DirectionY = 0;
                 }
                 this.ResetLocationByFoundationCenter();
+                if (self.GlobalBFCanvas.CanMove)
+                {
+                    if (_middle)
+                    {
+                        self.GlobalBFCanvas.SetCenterLocation(this.CenterLocation.X, this.CenterLocation.Y);
+                    }
+                    else
+                    {
+                        self.GlobalBFCanvas.OnStartMove({ TargetX : this.CenterLocation.X, TargetY : this.CenterLocation.Y, Speed : 8 });
+                    }
+                }
 
                 if (bx && by)
                 {
@@ -1815,6 +1832,19 @@ var BlueFox = (function (self)
              */
             this.OnStartMove = function (e)
             {
+                // 判断该元素是否处于屏幕(摄像机)中央
+                if (self.GlobalBFCanvas.CanMove)
+                {
+                    if (this.CenterLocation.Equal(self.GlobalBFCanvas.CenterLocation))
+                    {
+                        _middle = true;
+                    }
+                    else
+                    {
+                        _middle = false;
+                    }
+                }
+
                 var x = e.TargetX;
                 var y = e.TargetY;
                 var mapLyr = this.MapLayer();
@@ -2223,14 +2253,14 @@ var BlueFox = (function (self)
                 if (xOry == 'x')
                 {
                     t = self.MapSize.Width;
-                    c = this.DrawLocation().X;
+                    c = this.CenterLocation.X - _offsetX;
                     l = w;
                     d = _directionX;
                 }
                 else if (xOry == 'y')
                 {
                     t = self.MapSize.Height;
-                    c = this.DrawLocation().Y;
+                    c = this.CenterLocation.Y - _offsetY;
                     l = h;
                     d = _directionY;
                 }
@@ -2392,9 +2422,129 @@ var BlueFox = (function (self)
 
             this.SetDrawLocationByCenter = function ()
             {
-                var x = this.CenterLocation.X - _offsetX;
-                var y = this.CenterLocation.Y - _offsetY;
-                this.SetDrawLocation(x, y);
+                this.DrawLocation().X = this.CenterLocation.X - _offsetX;
+                this.DrawLocation().Y = this.CenterLocation.Y - _offsetY;
+            };
+
+            this.SetCenterLocation = function (x, y)
+            {
+                this.SetCenterX(x);
+                this.SetCenterY(y);
+                this.SetDrawLocationByCenter();
+            };
+
+            this.SetCenterX = function (val)
+            {
+                var d = 0;
+                if (val > this.CenterLocation.X)
+                {
+                    d = 1;
+                }
+                else if (val < this.CenterLocation.X)
+                {
+                    d = -1;
+                }
+                var t = self.MapSize.Width;
+                var c = val - _offsetX;
+                var l = w;
+
+                var b = false
+                if (d > 0)
+                {
+                    if (c + l >= t)
+                    {
+                        b = true;
+                    }
+                    else
+                    {
+                        b = false;
+                    }
+                }
+                else if (d < 0)
+                {
+                    if (c <= 0)
+                    {
+                        b = true;
+                    }
+                    else
+                    {
+                        b = false;
+                    }
+                }
+                else
+                {
+                    b = true;
+                }
+
+                this.CenterLocation.X = val;
+                if (b)
+                {
+                    if (d > 0)
+                    {
+                        this.CenterLocation.X = self.MapSize.Width - _offsetX;
+                    }
+                    else if (d < 0)
+                    {
+                        this.CenterLocation.X = _offsetX;
+                    }
+                }
+            };
+
+            this.SetCenterY = function (val)
+            {
+                var d = 0;
+                if (val > this.CenterLocation.Y)
+                {
+                    d = 1;
+                }
+                else if (val < this.CenterLocation.Y)
+                {
+                    d = -1;
+                }
+                var t = self.MapSize.Height;
+                var c = val - _offsetY;
+                var l = h;
+
+                var b = false
+                if (d > 0)
+                {
+                    if (c + l >= t)
+                    {
+                        b = true;
+                    }
+                    else
+                    {
+                        b = false;
+                    }
+                }
+                else if (d < 0)
+                {
+                    if (c <= 0)
+                    {
+                        b = true;
+                    }
+                    else
+                    {
+                        b = false;
+                    }
+                }
+                else
+                {
+                    b = true;
+                }
+
+                this.CenterLocation.Y = val;
+                if (b)
+                {
+                    if (d > 0)
+                    {
+                        this.CenterLocation.Y = self.MapSize.Height - h + _offsetY;
+                    }
+                    else if (d < 0)
+                    {
+                        this.CenterLocation.Y = _offsetY;
+                    }
+                }
             };
 
             /**
