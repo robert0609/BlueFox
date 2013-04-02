@@ -39,7 +39,7 @@ var BlueFox = (function (self)
     }
     catch (ex)
     {
-        alert(ex);
+        OutputDebug(ex);
     }
 
     /**
@@ -1068,7 +1068,7 @@ var BlueFox = (function (self)
             }
             catch (ex)
             {
-                alert(ex);
+                OutputDebug(ex);
             }
             finally
             {
@@ -1116,7 +1116,7 @@ var BlueFox = (function (self)
             }
             catch (ex)
             {
-                alert(ex);
+                OutputDebug(ex);
             }
             finally
             {
@@ -1146,7 +1146,7 @@ var BlueFox = (function (self)
             }
             catch (ex)
             {
-                alert(ex);
+                OutputDebug(ex);
             }
             finally
             {
@@ -2243,7 +2243,13 @@ var BlueFox = (function (self)
                 this.ClearSize.Height = height * 3;
             };
 
-            //TODO:考虑下该方法是否必要
+            /**
+             * 根据指定的坐标返回该坐标落在哪个绘图单元上
+             * @param x 屏幕横坐标
+             * @param y 屏幕纵坐标
+             * @return {BFRenderClass}
+             * @method
+             */
             this.FindRender = function (x, y)
             {
                 var loc = this.ConvertScreenLocation(x, y);
@@ -2282,6 +2288,9 @@ var BlueFox = (function (self)
         function BFCollisionLayerClass()
         {
             this.CanCheckConflict = true;
+            // 该类图层禁止添加绘图单元
+            this.RenderList = null;
+            this.AddRender = null;
 
             var _foundationRenderList = new Array();
 
@@ -2851,7 +2860,7 @@ var BlueFox = (function (self)
         }
         catch (ex)
         {
-            alert(ex);
+            OutputDebug(ex);
         }
 
         var loadingHtmlDisplay = false;
@@ -2892,7 +2901,7 @@ var BlueFox = (function (self)
             }
             catch (ex)
             {
-                alert(ex);
+                OutputDebug(ex);
             }
         }
 
@@ -2947,7 +2956,7 @@ var BlueFox = (function (self)
             }
             catch (ex)
             {
-                alert(ex);
+                OutputDebug(ex);
             }
             finally
             {
