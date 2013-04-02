@@ -683,8 +683,8 @@ var BlueFox = (function (self)
         var _layerHeight = h;
 
         var _layerCanvas = document.createElement('canvas');
-        _layerCanvas.width = w;
-        _layerCanvas.height = h;
+        _layerCanvas.width = 10000;
+        _layerCanvas.height = 10000;
         var _context = _layerCanvas.getContext('2d');
 
         // 每帧需要清除的范围(地图坐标)
@@ -2152,12 +2152,11 @@ var BlueFox = (function (self)
 
                 _matrix = m;
 
-                var p1 = this.ConvertMapLocation(0, 0);
-                var p2 = this.ConvertMapLocation(this.LayerWidth(), 0);
-                var p3 = this.ConvertMapLocation(this.LayerWidth(), this.LayerHeight());
-                var p4 = this.ConvertMapLocation(0, this.LayerHeight());
-
-                this.SetLayerCanvasSize(Math.abs(p2.X - p4.X), Math.abs(p1.Y - p3.Y));
+//                var p1 = this.ConvertMapLocation(0, 0);
+//                var p2 = this.ConvertMapLocation(this.LayerWidth(), 0);
+//                var p3 = this.ConvertMapLocation(this.LayerWidth(), this.LayerHeight());
+//                var p4 = this.ConvertMapLocation(0, this.LayerHeight());
+                //this.SetLayerCanvasSize(Math.abs(p2.X - p4.X), Math.abs(p1.Y - p3.Y));
                 _context.setTransform(_matrix[0], _matrix[1], _matrix[2], _matrix[3], _matrix[4], _matrix[5]);
             };
 
@@ -2974,7 +2973,7 @@ var BlueFox = (function (self)
             var txtLog = document.getElementById('txtLog');
             if (IsNullOrUndefined(txtLog))
             {
-                alert(logTxt);
+                //alert(logTxt);
             }
             else
             {
