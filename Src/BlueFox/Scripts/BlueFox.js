@@ -81,6 +81,16 @@ var BlueFox = (function (self)
         {
             return new BFSizeClass(this.Width, this.Height);
         };
+
+        this.Equal = function (size)
+        {
+            var b = false;
+            if (this.Width == size.Width && this.Height == size.Height)
+            {
+                b = true;
+            }
+            return b;
+        };
     }
 
     /**
@@ -674,6 +684,10 @@ var BlueFox = (function (self)
         _layerCanvas.height = h;
         var _context = _layerCanvas.getContext('2d');
 
+        // 每帧需要清除的范围(地图坐标)
+        this.ClearLocation = new BFLocationClass(0, 0);
+        this.ClearSize = new BFSizeClass(_layerWidth, _layerHeight);
+
         /**
          * 该图层的宽度(地图坐标)
          * @return {Number}
@@ -705,6 +719,22 @@ var BlueFox = (function (self)
         };
 
         /**
+         * 计算需要清除的区域
+         * @param screenX (屏幕坐标)
+         * @param screenY (屏幕坐标)
+         * @param width
+         * @param height
+         * @method
+         */
+        this.ComputeClearArea = function (screenX, screenY, width, height)
+        {
+            this.ClearLocation.X = screenX - width;
+            this.ClearLocation.Y = screenY - height;
+            this.ClearSize.Width = width * 3;
+            this.ClearSize.Height = height * 3;
+        };
+
+        /**
          * 重绘
          * @method
          */
@@ -712,7 +742,7 @@ var BlueFox = (function (self)
         {
             if (this.Refresh)
             {
-                //_context.clearRect(0, 0, w, h);
+                _context.clearRect(this.ClearLocation.X, this.ClearLocation.Y, this.ClearSize.Width, this.ClearSize.Height);
                 _renderList = _renderList.sort(function (a, b)
                 {
                     return a.ZOrder - b.ZOrder;
@@ -961,6 +991,7 @@ var BlueFox = (function (self)
         this.AddLayer = function (layer)
         {
             layer.ParentCanvas = this;
+            layer.ComputeClearArea(_drawLocation.X, _drawLocation.Y, this.CanvasWidth(), this.CanvasHeight());
             _layerList.push(layer);
         };
 
@@ -1129,6 +1160,16 @@ var BlueFox = (function (self)
         this.DrawLocation = function ()
         {
             return _drawLocation;
+        };
+
+        this.CanvasWidth = function ()
+        {
+            return _bufferCanvas.width;
+        };
+
+        this.CanvasHeight = function ()
+        {
+            return _bufferCanvas.height;
         };
     }
 
@@ -2173,6 +2214,32 @@ var BlueFox = (function (self)
                 return new BFLocationClass(x1, y1);
             };
 
+            /**
+             * 计算需要清除的区域
+             * @param screenX (屏幕坐标)
+             * @param screenY (屏幕坐标)
+             * @param width
+             * @param height
+             * @method
+             */
+            this.ComputeClearArea = function (screenX, screenY, width, height)
+            {
+                var p1 = this.ConvertScreenLocation(screenX, screenY);
+                var p2 = this.ConvertScreenLocation(screenX + width, screenY);
+                var p3 = this.ConvertScreenLocation(screenX + width, screenY + height);
+                var p4 = this.ConvertScreenLocation(screenX, screenY + height);
+
+                var x = p1.X;
+                var y = p2.Y;
+                var ww = Math.abs(p3.X - p1.X);
+                var hh = Math.abs(p4.Y - p2.Y);
+
+                this.ClearLocation.X = x - ww;
+                this.ClearLocation.Y = y - hh;
+                this.ClearSize.Width = width * 3;
+                this.ClearSize.Height = height * 3;
+            };
+
             //TODO:考虑下该方法是否必要
             this.FindRender = function (x, y)
             {
@@ -2232,7 +2299,7 @@ var BlueFox = (function (self)
                 if (this.Refresh)
                 {
                     var context = this.LayerContext();
-                    //context.clearRect(0, 0, w, h);
+                    context.clearRect(this.ClearLocation.X, this.ClearLocation.Y, this.ClearSize.Width, this.ClearSize.Height);
                     _quarterTree.Clear();
                     var foundationRender = null;
                     var checkRenders = new Array();
@@ -2629,6 +2696,10 @@ var BlueFox = (function (self)
             {
                 this.DrawLocation().X = this.CenterLocation.X - _offsetX;
                 this.DrawLocation().Y = this.CenterLocation.Y - _offsetY;
+                for (var i = 0; i < this.LayerList().length; ++i)
+                {
+                    this.LayerList()[i].ComputeClearArea(this.DrawLocation().X, this.DrawLocation().Y, this.CanvasWidth(), this.CanvasHeight());
+                }
             };
 
             this.SetCenterX = function (val)

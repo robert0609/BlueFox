@@ -23,9 +23,11 @@
 
             var layer2 = BlueFox.CreateBFLayer(layer1.LayerCanvas().width, layer1.LayerCanvas().height);
             layer2.LayerContext().strokeRect(0, 0, layer2.LayerCanvas().width, layer2.LayerCanvas().height);
+            layer2.LayerContext().fillRect(0, 0, layer2.LayerCanvas().width, layer2.LayerCanvas().height);
+            layer2.LayerContext().clearRect(-600, 0, layer2.LayerCanvas().width, layer2.LayerCanvas().height);
 
             var layer = BlueFox.CreateBFLayer(layer1.LayerCanvas().width, layer1.LayerCanvas().height);
-            layer.LayerContext().drawImage(layer1.LayerCanvas(), 0, 0, layer1.LayerCanvas().width, layer1.LayerCanvas().height, 0, 0, layer1.LayerCanvas().width, layer1.LayerCanvas().height);
+            //layer.LayerContext().drawImage(layer1.LayerCanvas(), 0, 0, layer1.LayerCanvas().width, layer1.LayerCanvas().height, 0, 0, layer1.LayerCanvas().width, layer1.LayerCanvas().height);
             layer.LayerContext().drawImage(layer2.LayerCanvas(), 0, 0, layer2.LayerCanvas().width, layer2.LayerCanvas().height, 0, 0, layer2.LayerCanvas().width, layer2.LayerCanvas().height);
             document.body.appendChild(layer.LayerCanvas());
         }
