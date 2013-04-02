@@ -104,16 +104,23 @@
 
             return middle;
         }
+
+        function Load2()
+        {
+            for (var i = 0; i < 100; ++i)
+            {
+                var txtLog = document.getElementById('txtLog');
+                txtLog.value += i + '\n';
+            }
+        }
     </script>
 </head>
-<body onload="Load1()">
+<body onload="Load2()">
 
 <input type="text" name="txt1" value="这是标题" onclick="getValue()" />
 <!--<h1 name="txt1" onclick="getValue()">这是标题</h1>-->
 <p>点击标题，会提示出它的值。</p>
-<script type="text/javascript">
-
-</script>
+<table style="width: 1200px;"><tr><td style="width: 850px;"></td><td style="width: 350px;"><textarea id="txtLog" style="width: 100%; height: 500px; "></textarea></td></tr></table>
 
 </body>
 </html>

@@ -9,9 +9,12 @@
 var BlueFox = (function (self)
 {
     var ConstLoadingHtml = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /></td></tr></table>';
+    var DebugHtml = '<table style="width: 1200px;"><tr><td id="mainCanvas" style="width: 850px;"></td><td style="width: 350px;"><textarea id="txtLog" style="width: 100%; height: 500px; "></textarea></td></tr></table>';
 
     try
     {
+        // 调试开关
+        self.DebugSwitch = false;
         /**
          * 所有资源的容器
          * @type {BFResourceContainerClass}
@@ -2863,8 +2866,17 @@ var BlueFox = (function (self)
                     //TODO self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
                     if (!canvasDiaplay)
                     {
-                        document.body.innerHTML = '';
-                        document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                        if (this.DebugSwitch)
+                        {
+                            document.body.innerHTML = DebugHtml;
+                            var mainCanvas = document.getElementById('mainCanvas');
+                            mainCanvas.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                        }
+                        else
+                        {
+                            document.body.innerHTML = '';
+                            document.body.appendChild(self.GlobalBFCanvas.BufferCanvas());
+                        }
                         canvasDiaplay = true;
                     }
                     self.GlobalBFCanvas.Draw();
@@ -2942,6 +2954,20 @@ var BlueFox = (function (self)
                 CancelEventFlow(e);
             }
         }
+    };
+
+    function OutputDebug(logTxt)
+    {
+        if (this.DebugSwitch)
+        {
+            var txtLog = document.getElementById('txtLog');
+            txtLog.value += logTxt + '\n';
+        }
+    }
+
+    self.Debug = function (logTxt)
+    {
+        OutputDebug(logTxt);
     };
 
     return self;
