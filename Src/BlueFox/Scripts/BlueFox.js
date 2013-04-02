@@ -33,8 +33,8 @@ var BlueFox = (function (self)
         self.DragedRender = null;
         // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
         self.CurrentTime = 0;
-        // 地图的尺寸
-        self.MapSize = new BFSizeClass(0, 0);
+        // 整个地图的屏幕尺寸
+        self.MapScreenSize = new BFSizeClass(0, 0);
     }
     catch (ex)
     {
@@ -655,10 +655,24 @@ var BlueFox = (function (self)
         // 该字段缓存当前图层中高度最大的元素的高度值，用以辅助判断鼠标点击在哪个元素上
         this.RenderHeightMax = 0;
 
+        // 该Layer的长宽
+        var _layerWidth = w;
+        var _layerHeight = h;
+
         var _layerCanvas = document.createElement('canvas');
         _layerCanvas.width = w;
         _layerCanvas.height = h;
         var _context = _layerCanvas.getContext('2d');
+
+        this.LayerWidth = function ()
+        {
+            return _layerWidth;
+        };
+
+        this.LayerHeight = function ()
+        {
+            return _layerHeight;
+        };
 
         this.StrokeStyle = function (color)
         {
@@ -697,14 +711,13 @@ var BlueFox = (function (self)
             return _layerCanvas;
         };
 
-        this.Width = function()
+        this.SetLayerCanvasSize = function (width, height)
         {
-            return _layerCanvas.width;
-        };
-
-        this.Height = function ()
-        {
-            return _layerCanvas.height;
+            var strokeStyleCache = _context.strokeStyle;
+            _layerCanvas.width = width;
+            _layerCanvas.height = height;
+            // 设置长宽之后会重置Context的所有Matrix和Style，因此此处重新设置
+            _context.strokeStyle = strokeStyleCache;
         };
 
         this.RenderList = function ()
@@ -1945,17 +1958,23 @@ var BlueFox = (function (self)
 
             this.Transform = function ()
             {
-                _context.setTransform(1, 0, 0, 1, 0, 0);
                 var m = [1, 0, 0, 1, 0, 0];
                 var a = null;
                 for (var i = 0; i < _transformCache.length; ++i)
                 {
                     a = _transformCache[i];
-                    _context.transform(a[0], a[1], a[2], a[3], a[4], a[5]);
                     m = MatrixMultiply(m, a);
                 }
 
                 _matrix = m;
+
+                var p1 = this.ConvertMapLocation(0, 0);
+                var p2 = this.ConvertMapLocation(this.LayerWidth(), 0);
+                var p3 = this.ConvertMapLocation(this.LayerWidth(), this.LayerHeight());
+                var p4 = this.ConvertMapLocation(0, this.LayerHeight());
+
+                this.SetLayerCanvasSize(Math.abs(p2.X - p4.X), Math.abs(p1.Y - p3.Y));
+                _context.setTransform(_matrix[0], _matrix[1], _matrix[2], _matrix[3], _matrix[4], _matrix[5]);
             };
 
             function MatrixMultiply(m, n)
@@ -2252,14 +2271,14 @@ var BlueFox = (function (self)
                 var d = 0;
                 if (xOry == 'x')
                 {
-                    t = self.MapSize.Width;
+                    t = self.MapScreenSize.Width;
                     c = this.CenterLocation.X - _offsetX;
                     l = w;
                     d = _directionX;
                 }
                 else if (xOry == 'y')
                 {
-                    t = self.MapSize.Height;
+                    t = self.MapScreenSize.Height;
                     c = this.CenterLocation.Y - _offsetY;
                     l = h;
                     d = _directionY;
@@ -2310,7 +2329,7 @@ var BlueFox = (function (self)
                     {
                         if (_directionX > 0)
                         {
-                            this.CenterLocation.X = self.MapSize.Width - _offsetX;
+                            this.CenterLocation.X = self.MapScreenSize.Width - _offsetX;
                         }
                         else if (_directionX < 0)
                         {
@@ -2334,7 +2353,7 @@ var BlueFox = (function (self)
                     {
                         if (_directionY > 0)
                         {
-                            this.CenterLocation.Y = self.MapSize.Height - h + _offsetY;
+                            this.CenterLocation.Y = self.MapScreenSize.Height - h + _offsetY;
                         }
                         else if (_directionY < 0)
                         {
@@ -2444,7 +2463,7 @@ var BlueFox = (function (self)
                 {
                     d = -1;
                 }
-                var t = self.MapSize.Width;
+                var t = self.MapScreenSize.Width;
                 var c = val - _offsetX;
                 var l = w;
 
@@ -2481,7 +2500,7 @@ var BlueFox = (function (self)
                 {
                     if (d > 0)
                     {
-                        this.CenterLocation.X = self.MapSize.Width - _offsetX;
+                        this.CenterLocation.X = self.MapScreenSize.Width - _offsetX;
                     }
                     else if (d < 0)
                     {
@@ -2501,7 +2520,7 @@ var BlueFox = (function (self)
                 {
                     d = -1;
                 }
-                var t = self.MapSize.Height;
+                var t = self.MapScreenSize.Height;
                 var c = val - _offsetY;
                 var l = h;
 
@@ -2538,7 +2557,7 @@ var BlueFox = (function (self)
                 {
                     if (d > 0)
                     {
-                        this.CenterLocation.Y = self.MapSize.Height - h + _offsetY;
+                        this.CenterLocation.Y = self.MapScreenSize.Height - h + _offsetY;
                     }
                     else if (d < 0)
                     {
