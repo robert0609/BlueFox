@@ -21,9 +21,7 @@ var BlueFox = (function (self)
         self.FPS = 60;
         // 每帧间隔时间，毫秒
         self.Interval = 1000 / self.FPS;
-        self.FoundationCellWidth = 16;
-        self.FoundationCellHeight = 16;
-        // 全局画布
+        // 全局画布(即摄像机)
         self.GlobalBFCanvas = null;
         // 当前选中的元素
         self.SelectRender = null;
@@ -78,6 +76,11 @@ var BlueFox = (function (self)
     {
         this.Width = Number(w);
         this.Height = Number(h);
+
+        this.Copy = function ()
+        {
+            return new BFSizeClass(this.Width, this.Height);
+        };
     }
 
     /**
@@ -364,6 +367,11 @@ var BlueFox = (function (self)
             }
         };
 
+        /**
+         * 绘制分割的矩形的痕迹
+         * @param context
+         * @method
+         */
         this.Draw = function (context)
         {
             context.strokeRect(this.Location.X, this.Location.Y, this.Size.Width, this.Size.Height);
@@ -525,12 +533,7 @@ var BlueFox = (function (self)
          * @Event
          */
         this.OnUpdate = function ()
-        {
-//            this.SLocation = new BFLocationClass(0, 0);
-//            this.SSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
-//            this.CLocation = new BFLocationClass(0, 0);
-//            this.CSize = new BFSizeClass(_image.GetImageCanvas().width, _image.GetImageCanvas().height);
-        };
+        {};
 
         /**
          * 设置该绘图单元的图片
@@ -551,6 +554,13 @@ var BlueFox = (function (self)
             _image = self.BFResourceContainer.GetImage(id);
         };
 
+        /**
+         * 判断指定的点是否在该元素的显示范围内
+         * @param x
+         * @param y
+         * @return {Boolean}
+         * @method
+         */
         this.Contains = function (x, y)
         {
             if (x >= this.CLocation.X && x <= this.CLocation.X + this.CSize.Width &&
@@ -645,7 +655,7 @@ var BlueFox = (function (self)
         this.Refresh = true;
         // 该图层是否需要刷新成功之后自动停止刷新。True:需要;False:不需要
         this.AutoStopRefresh = false;
-
+        // 图层重绘的次序，由小到大
         this.Index = 0;
 
         var _renderList = new Array();
@@ -664,26 +674,45 @@ var BlueFox = (function (self)
         _layerCanvas.height = h;
         var _context = _layerCanvas.getContext('2d');
 
+        /**
+         * 该图层的宽度(地图坐标)
+         * @return {Number}
+         * @method
+         */
         this.LayerWidth = function ()
         {
             return _layerWidth;
         };
 
+        /**
+         * 该图层的高度(地图坐标)
+         * @return {Number}
+         * @method
+         */
         this.LayerHeight = function ()
         {
             return _layerHeight;
         };
 
+        /**
+         * 设置线条颜色
+         * @param color
+         * @method
+         */
         this.StrokeStyle = function (color)
         {
             _context.strokeStyle = color;
         };
 
+        /**
+         * 重绘
+         * @method
+         */
         this.Draw = function ()
         {
             if (this.Refresh)
             {
-                _context.clearRect(0, 0, w, h);
+                //_context.clearRect(0, 0, w, h);
                 _renderList = _renderList.sort(function (a, b)
                 {
                     return a.ZOrder - b.ZOrder;
@@ -711,6 +740,12 @@ var BlueFox = (function (self)
             return _layerCanvas;
         };
 
+        /**
+         * 重新设置Canvas的尺寸
+         * @param width
+         * @param height
+         * @method
+         */
         this.SetLayerCanvasSize = function (width, height)
         {
             var strokeStyleCache = _context.strokeStyle;
@@ -730,12 +765,24 @@ var BlueFox = (function (self)
             return _context;
         };
 
+        /**
+         * 向该图层添加绘图单元
+         * @param render
+         * @method
+         */
         this.AddRender = function (render)
         {
             render.ParentLayer = this;
             _renderList.push(render);
         };
 
+        /**
+         * 根据指定的坐标返回该坐标落在哪个绘图单元上
+         * @param x 屏幕横坐标
+         * @param y 屏幕纵坐标
+         * @return {BFRenderClass}
+         * @method
+         */
         this.FindRender = function (x, y)
         {
             var ret = null;
@@ -824,7 +871,7 @@ var BlueFox = (function (self)
         _bufferContext.fillStyle = 'red';
         _bufferContext.font = '20px Lucida Console';
 
-        // 要显示的Canvas起始的位置，(左上屏幕坐标)
+        // 要显示的Canvas起始的位置，(相对于整个地图的左上屏幕坐标)
         var _drawLocation = new BFLocationClass(0, 0);
 
         /**
@@ -906,23 +953,43 @@ var BlueFox = (function (self)
             return _layerList;
         };
 
+        /**
+         * 向该Canvas添加图层
+         * @param layer
+         * @method
+         */
         this.AddLayer = function (layer)
         {
             layer.ParentCanvas = this;
             _layerList.push(layer);
         };
 
+        /**
+         * 根据指定的坐标判断落在哪个绘图单元上
+         * @param x 屏幕横坐标
+         * @param y 屏幕纵坐标
+         * @return {BFRenderClass}
+         * @method
+         */
         this.FindRender = function (x, y)
         {
             return innerFindRender(x, y);
         };
 
+        /**
+         * 根据指定的坐标判断落在哪个绘图单元上
+         * @param x 屏幕横坐标
+         * @param y 屏幕纵坐标
+         * @return {BFRenderClass}
+         * @method
+         */
         function innerFindRender(x, y)
         {
             var element = null;
             for (var i = _layerList.length - 1; i > -1; --i)
             {
                 var layer = _layerList[i];
+                //TODO:判断条件得改一下
                 if (!layer.Refresh)
                 {
                     continue;
@@ -1072,7 +1139,6 @@ var BlueFox = (function (self)
      */
     function BFFoundationClass(foundation)
     {
-        this.Flag = foundation.Flag;
         this.Center = new BFLocationClass(0, 0);
 
         this.Radius = 0;
@@ -1082,6 +1148,8 @@ var BlueFox = (function (self)
         this.Height = 0;
         this.KW = 0;
         this.KH = 0;
+
+        this.Flag = foundation.Flag;
         if (this.Flag == 'circle')
         {
             this.Radius = foundation.Radius;
@@ -1104,6 +1172,12 @@ var BlueFox = (function (self)
             this.KH = Math.round((this.RectPoints[0][0].Y - this.RectPoints[1][0].Y) / (this.RectPoints[0][0].X - this.RectPoints[1][0].X));
         }
 
+        /**
+         * 设置该地基的中心坐标(地图坐标)
+         * @param x
+         * @param y
+         * @method
+         */
         this.SetCenter = function (x, y)
         {
             var originalX = this.Center.X;
@@ -1128,30 +1202,30 @@ var BlueFox = (function (self)
 
         /**
          * 检测与其他地基是否碰撞
-         * @param foundation 地基
+         * @param BFFoundation 地基
          * @return {Boolean}
          * @method
          */
-        this.CheckConflict = function (foundation)
+        this.CheckConflict = function (BFFoundation)
         {
             var ret = false;
-            if (this.Flag == 'circle' && foundation.Flag == 'circle')
+            if (this.Flag == 'circle' && BFFoundation.Flag == 'circle')
             {
-                ret = ComputeCollisionCC(this.Radius, foundation.Radius, this.Center.X - foundation.Center.X, this.Center.Y - foundation.Center.Y);
+                ret = ComputeCollisionCC(this.Radius, BFFoundation.Radius, this.Center.X - BFFoundation.Center.X, this.Center.Y - BFFoundation.Center.Y);
             }
-            else if (this.Flag == 'rectangle' && foundation.Flag == 'rectangle')
+            else if (this.Flag == 'rectangle' && BFFoundation.Flag == 'rectangle')
             {
-                ret = ComputeCollisionRR(this, foundation);
+                ret = ComputeCollisionRR(this, BFFoundation);
             }
             else
             {
                 if (this.Flag == 'circle')
                 {
-                    ret = ComputeCollisionCR(foundation.Width, foundation.Height, this.Radius, this.Center.X - foundation.Center.X, this.Center.Y - foundation.Center.Y);
+                    ret = ComputeCollisionCR(BFFoundation.Width, BFFoundation.Height, this.Radius, this.Center.X - BFFoundation.Center.X, this.Center.Y - BFFoundation.Center.Y);
                 }
                 else
                 {
-                    ret = ComputeCollisionCR(this.Width, this.Height, foundation.Radius, foundation.Center.X - this.Center.X, foundation.Center.Y - this.Center.Y);
+                    ret = ComputeCollisionCR(this.Width, this.Height, BFFoundation.Radius, BFFoundation.Center.X - this.Center.X, BFFoundation.Center.Y - this.Center.Y);
                 }
             }
             return ret;
@@ -1307,6 +1381,11 @@ var BlueFox = (function (self)
             return true;
         }
 
+        /**
+         * 绘制地基图形
+         * @param context
+         * @method
+         */
         this.Draw = function (context)
         {
             if (this.Flag == 'circle')
@@ -1342,7 +1421,7 @@ var BlueFox = (function (self)
     }
 
     /**
-     * 更新元素位置信息的控制计数器
+     * 控制元素位置信息更新的计数器
      * @param xOry
      * @param cnt
      * @constructor
@@ -1426,6 +1505,12 @@ var BlueFox = (function (self)
         return render;
     };
 
+    /**
+     * 创建带有地基的绘制元素
+     * @param entity
+     * @return {BFFoundationRenderClass}
+     * @method
+     */
     self.CreateBFFoundationRender = function (entity)
     {
         if (IsNullOrUndefined(entity))
@@ -1447,6 +1532,13 @@ var BlueFox = (function (self)
             // 是否强制检测碰撞的标志位。True:不论对方的ForceCheckConflict真假都检测碰撞;False:当对方的ForceCheckConflict为真才检测碰撞
             this.ForceCheckConflict = false;
 
+            /**
+             * 将基准中心位置的坐标转换成左上坐标(屏幕坐标)
+             * @param xOry
+             * @param val
+             * @return {Number}
+             * @method
+             */
             this.Center2CLocation = function (xOry, val)
             {
                 var ret = 0;
@@ -1461,6 +1553,13 @@ var BlueFox = (function (self)
                 return ret;
             };
 
+            /**
+             * 将左上坐标转换成基准中心位置的坐标(屏幕坐标)
+             * @param xOry
+             * @param val
+             * @return {Number}
+             * @method
+             */
             this.CLocation2Center = function (xOry, val)
             {
                 var ret = 0;
@@ -1475,7 +1574,7 @@ var BlueFox = (function (self)
                 return ret;
             };
 
-            // 元素移动的基准位置坐标(屏幕坐标)
+            // 元素移动的基准中心位置坐标(屏幕坐标)
             this.CenterLocation = new BFLocationClass(this.CLocation2Center('x', this.CLocation.X), this.CLocation2Center('y', this.CLocation.Y));
 
             // 元素的地基，用以碰撞检测
@@ -1526,7 +1625,7 @@ var BlueFox = (function (self)
                     _mapLayer = mapLayer;
                     if (_mapLayer.CanCheckConflict)
                     {
-                        _mapLayer.FoundationRenderList().push(this);
+                        _mapLayer.AddFoundationRender(this);
                     }
                     if (IsNullOrUndefined(this.FoundationCenter))
                     {
@@ -1578,6 +1677,12 @@ var BlueFox = (function (self)
         return new BFFoundationRenderClass();
     };
 
+    /**
+     * 创建可以移动的带有地基的绘制元素
+     * @param entity
+     * @return {BFMovableRenderClass}
+     * @method
+     */
     self.CreateBFMovableRender = function (entity)
     {
         if (IsNullOrUndefined(entity))
@@ -1911,11 +2016,25 @@ var BlueFox = (function (self)
         return new BFMovableRenderClass();
     };
 
+    /**
+     * 创建图层
+     * @param w
+     * @param h
+     * @return {BFLayerClass}
+     * @method
+     */
     self.CreateBFLayer = function (w, h)
     {
         return new BFLayerClass(w, h);
     };
 
+    /**
+     * 创建可以矩阵变换的图层
+     * @param w
+     * @param h
+     * @return {BFTransformLayerClass}
+     * @method
+     */
     self.CreateBFTransformLayer = function (w, h)
     {
         BFTransformLayerClass.prototype = self.CreateBFLayer(w, h);
@@ -1931,6 +2050,12 @@ var BlueFox = (function (self)
             // 变换矩阵[a, b, c, d, e, f]
             var _matrix = [1, 0, 0, 1, 0, 0];
 
+            /**
+             * 坐标缩放
+             * @param sx
+             * @param sy
+             * @method
+             */
             this.Scale = function (sx, sy)
             {
                 var a = _transformCache[0];
@@ -1938,6 +2063,11 @@ var BlueFox = (function (self)
                 a[3] = sy;
             };
 
+            /**
+             * 坐标旋转(顺时针)
+             * @param angle
+             * @method
+             */
             this.Rotate = function (angle)
             {
                 var a = _transformCache[1];
@@ -1949,6 +2079,12 @@ var BlueFox = (function (self)
                 a[3] = cos;
             };
 
+            /**
+             * 坐标平移
+             * @param x
+             * @param y
+             * @method
+             */
             this.Translate = function (x, y)
             {
                 var a = _transformCache[2];
@@ -1956,6 +2092,10 @@ var BlueFox = (function (self)
                 a[5] = y;
             };
 
+            /**
+             * 设置变换矩阵
+             * @method
+             */
             this.Transform = function ()
             {
                 var m = [1, 0, 0, 1, 0, 0];
@@ -2033,6 +2173,7 @@ var BlueFox = (function (self)
                 return new BFLocationClass(x1, y1);
             };
 
+            //TODO:考虑下该方法是否必要
             this.FindRender = function (x, y)
             {
                 var loc = this.ConvertScreenLocation(x, y);
@@ -2057,6 +2198,13 @@ var BlueFox = (function (self)
         return new BFTransformLayerClass();
     };
 
+    /**
+     * 创建可以检测碰撞并且可以矩阵变换的图层
+     * @param w
+     * @param h
+     * @return {BFCollisionLayerClass}
+     * @method
+     */
     self.CreateBFCollisionLayer = function (w, h)
     {
         BFCollisionLayerClass.prototype = self.CreateBFTransformLayer(w, h);
@@ -2069,9 +2217,14 @@ var BlueFox = (function (self)
 
             var _quarterTree = new QuarterTreeClass(0, 0, w, h);
 
-            this.FoundationRenderList = function ()
+            /**
+             * 添加要检测碰撞的绘图单元
+             * @param foundationRender
+             * @method
+             */
+            this.AddFoundationRender = function (foundationRender)
             {
-                return _foundationRenderList;
+                _foundationRenderList.push(foundationRender);
             };
 
             this.Draw = function ()
@@ -2079,7 +2232,7 @@ var BlueFox = (function (self)
                 if (this.Refresh)
                 {
                     var context = this.LayerContext();
-                    context.clearRect(0, 0, w, h);
+                    //context.clearRect(0, 0, w, h);
                     _quarterTree.Clear();
                     var foundationRender = null;
                     var checkRenders = new Array();
@@ -2133,12 +2286,26 @@ var BlueFox = (function (self)
         return new BFCollisionLayerClass();
     };
 
+    /**
+     * 创建全局Canvas
+     * @param w
+     * @param h
+     * @return {BFCanvasClass}
+     * @method
+     */
     self.CreateBFCanvas = function (w, h)
     {
         self.GlobalBFCanvas = new BFCanvasClass(w, h);
         return self.GlobalBFCanvas;
     };
 
+    /**
+     * 创建可移动的全局Canvas，即摄像机
+     * @param w
+     * @param h
+     * @return {BFMovableCanvas}
+     * @method
+     */
     self.CreateBFMovableCanvas = function (w, h)
     {
         BFMovableCanvasClass.prototype = new BFCanvasClass(w, h);
@@ -2147,13 +2314,15 @@ var BlueFox = (function (self)
         {
             this.CanMove = true;
 
+            // 移动的目标坐标(屏幕坐标)
             var _targetX = 0;
             var _targetY = 0;
+            // 每帧移动的像素数
             var _speed = 0;
-
+            // 移动的方向(屏幕坐标)
             var _directionX = 0;
             var _directionY = 0;
-
+            // 摄像机的中心基准位置相对于左上屏幕坐标的偏移量
             var _offsetX = w / 2;
             var _offsetY = h * 0.618;
             this.CenterLocation = new BFLocationClass(this.DrawLocation().X + _offsetX, this.DrawLocation().Y + _offsetY);
@@ -2439,17 +2608,27 @@ var BlueFox = (function (self)
                 }
             };
 
-            this.SetDrawLocationByCenter = function ()
-            {
-                this.DrawLocation().X = this.CenterLocation.X - _offsetX;
-                this.DrawLocation().Y = this.CenterLocation.Y - _offsetY;
-            };
-
+            /**
+             * 设置中心基准位置(屏幕坐标)
+             * @param x
+             * @param y
+             * @method
+             */
             this.SetCenterLocation = function (x, y)
             {
                 this.SetCenterX(x);
                 this.SetCenterY(y);
                 this.SetDrawLocationByCenter();
+            };
+
+            /**
+             * 根据中心基准位置设置左上屏幕坐标(屏幕坐标)
+             * @method
+             */
+            this.SetDrawLocationByCenter = function ()
+            {
+                this.DrawLocation().X = this.CenterLocation.X - _offsetX;
+                this.DrawLocation().Y = this.CenterLocation.Y - _offsetY;
             };
 
             this.SetCenterX = function (val)
