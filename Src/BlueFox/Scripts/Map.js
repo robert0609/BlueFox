@@ -61,6 +61,7 @@ function Load()
             layer2.AddRender(building);
         }
 
+        BlueFox.DebugSwitch = true;
         BlueFox.Run();
 
         BFCanvas.SetCenterLocation(building.CenterLocation.X, building.CenterLocation.Y);

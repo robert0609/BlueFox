@@ -9,7 +9,7 @@
 var BlueFox = (function (self)
 {
     var ConstLoadingHtml = '<table style="width: 100%; height: 100%;"><tr><td style="text-align: center;vertical-align: middle;"><img src="./Resource/Img/loading.gif" /></td></tr></table>';
-    var DebugHtml = '<table style="width: 1200px;"><tr><td id="mainCanvas" style="width: 850px;"></td><td style="width: 350px;"><textarea id="txtLog" style="width: 100%; height: 500px; "></textarea></td></tr></table>';
+    var DebugHtml = '<table style="width: 1200px;"><tr><td id="mainCanvas" style="width: 850px;"></td><td style="width: 350px;vertical-align: top; text-align: left;"><textarea id="txtLog" style="width: 100%; height: 500px; "></textarea></td></tr></table>';
 
     try
     {
@@ -2227,6 +2227,7 @@ var BlueFox = (function (self)
              */
             this.ComputeClearArea = function (screenX, screenY, width, height)
             {
+                OutputDebug('(' + screenX + ',' + screenY + ' | ' + width + ',' + height + ')');
                 var p1 = this.ConvertScreenLocation(screenX, screenY);
                 var p2 = this.ConvertScreenLocation(screenX + width, screenY);
                 var p3 = this.ConvertScreenLocation(screenX + width, screenY + height);
@@ -2311,6 +2312,7 @@ var BlueFox = (function (self)
                 if (this.Refresh)
                 {
                     var context = this.LayerContext();
+                    //OutputDebug('(' + this.ClearLocation.X + ',' + this.ClearLocation.Y + ' | ' + this.ClearSize.Width + ',' + this.ClearSize.Height  + ')');
                     context.clearRect(this.ClearLocation.X, this.ClearLocation.Y, this.ClearSize.Width, this.ClearSize.Height);
                     _quarterTree.Clear();
                     var foundationRender = null;
@@ -2875,7 +2877,7 @@ var BlueFox = (function (self)
                     //TODO self.GlobalBFCanvas.BufferCanvas().onmousemove = MouseMoveEvent;
                     if (!canvasDiaplay)
                     {
-                        if (this.DebugSwitch)
+                        if (self.DebugSwitch)
                         {
                             document.body.innerHTML = DebugHtml;
                             var mainCanvas = document.getElementById('mainCanvas');
@@ -2967,10 +2969,17 @@ var BlueFox = (function (self)
 
     function OutputDebug(logTxt)
     {
-        if (this.DebugSwitch)
+        if (self.DebugSwitch)
         {
             var txtLog = document.getElementById('txtLog');
-            txtLog.value += logTxt + '\n';
+            if (IsNullOrUndefined(txtLog))
+            {
+                alert(logTxt);
+            }
+            else
+            {
+                txtLog.value += logTxt + '\n';
+            }
         }
     }
 
