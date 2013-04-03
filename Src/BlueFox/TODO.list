@@ -2,4 +2,6 @@
 3.惯性特效等
 4.无限延伸地图效果
 6.图片切换效果
-8.Layer.RenderList
+8.Layer.RenderList重绘范围
+9.地基没有被Clear
+10.一直在计算刷新区域
