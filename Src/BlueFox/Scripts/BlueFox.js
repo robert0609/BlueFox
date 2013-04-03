@@ -691,7 +691,6 @@ var BlueFox = (function (self)
         }
 
         var _layerCanvas = document.createElement('canvas');
-        debugger;
         _layerCanvas.width = self.MapScreenSize.Width;
         _layerCanvas.height = self.MapScreenSize.Height;
         var _context = _layerCanvas.getContext('2d');
