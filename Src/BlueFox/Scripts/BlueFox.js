@@ -34,8 +34,8 @@ var BlueFox = (function (self)
         self.DragedRender = null;
         // 毫秒数,缓存了上一帧绘制结束的时刻,用以计算每帧耗时
         self.CurrentTime = 0;
-        // 整个地图的屏幕尺寸
-        self.MapScreenSize = new BFSizeClass(0, 0);
+        // 整个地图的屏幕尺寸，默认是10000*10000
+        self.MapScreenSize = new BFSizeClass(2000, 2000);
     }
     catch (ex)
     {
@@ -658,8 +658,8 @@ var BlueFox = (function (self)
 
     /**
      * 图层类
-     * @param w
-     * @param h
+     * @param w 该图层的宽度(*不是Canvas的宽度)
+     * @param h 该图层的高度(*不是Canvas的高度)
      * @constructor
      */
     function BFLayerClass(w, h)
@@ -678,13 +678,22 @@ var BlueFox = (function (self)
         // 该字段缓存当前图层中高度最大的元素的高度值，用以辅助判断鼠标点击在哪个元素上
         this.RenderHeightMax = 0;
 
-        // 该Layer的长宽
-        var _layerWidth = w;
-        var _layerHeight = h;
+        // 该Layer的宽高
+        var _layerWidth = self.MapScreenSize.Width;
+        var _layerHeight = self.MapScreenSize.Height;
+        if (!IsNullOrUndefined(w))
+        {
+            _layerWidth = w;
+        }
+        if (!IsNullOrUndefined(h))
+        {
+            _layerHeight = h;
+        }
 
         var _layerCanvas = document.createElement('canvas');
-        _layerCanvas.width = 10000;
-        _layerCanvas.height = 10000;
+        debugger;
+        _layerCanvas.width = self.MapScreenSize.Width;
+        _layerCanvas.height = self.MapScreenSize.Height;
         var _context = _layerCanvas.getContext('2d');
 
         // 每帧需要清除的范围(地图坐标)
@@ -771,21 +780,6 @@ var BlueFox = (function (self)
         this.LayerCanvas = function ()
         {
             return _layerCanvas;
-        };
-
-        /**
-         * 重新设置Canvas的尺寸
-         * @param width
-         * @param height
-         * @method
-         */
-        this.SetLayerCanvasSize = function (width, height)
-        {
-            var strokeStyleCache = _context.strokeStyle;
-            _layerCanvas.width = width;
-            _layerCanvas.height = height;
-            // 设置长宽之后会重置Context的所有Matrix和Style，因此此处重新设置
-            _context.strokeStyle = strokeStyleCache;
         };
 
         this.RenderList = function ()
@@ -2152,11 +2146,6 @@ var BlueFox = (function (self)
 
                 _matrix = m;
 
-//                var p1 = this.ConvertMapLocation(0, 0);
-//                var p2 = this.ConvertMapLocation(this.LayerWidth(), 0);
-//                var p3 = this.ConvertMapLocation(this.LayerWidth(), this.LayerHeight());
-//                var p4 = this.ConvertMapLocation(0, this.LayerHeight());
-                //this.SetLayerCanvasSize(Math.abs(p2.X - p4.X), Math.abs(p1.Y - p3.Y));
                 _context.setTransform(_matrix[0], _matrix[1], _matrix[2], _matrix[3], _matrix[4], _matrix[5]);
             };
 
@@ -2973,7 +2962,7 @@ var BlueFox = (function (self)
             var txtLog = document.getElementById('txtLog');
             if (IsNullOrUndefined(txtLog))
             {
-                //alert(logTxt);
+                alert(logTxt);
             }
             else
             {

@@ -20,12 +20,12 @@ function Load()
         var mapList = GetMapList();
         var buildingList = GetBuildingList();
 
-        var layer1 = BlueFox.CreateBFTransformLayer(6400, 6400);
+        var layer1 = BlueFox.CreateBFTransformLayer(640, 640);
         layer1.Index = 0;
         layer1.AutoStopRefresh = true;
         layer1.Scale(1, 0.4);
         layer1.Rotate(Math.PI / 4);
-        layer1.Translate(3200, -3200);
+        layer1.Translate(320, -320);
         layer1.Transform();
 
         var layer3 = BlueFox.CreateBFCollisionLayer(layer1.LayerWidth(), layer1.LayerHeight());
@@ -33,13 +33,10 @@ function Load()
         layer3.StrokeStyle('red');
         layer3.Scale(1, 0.4);
         layer3.Rotate(Math.PI / 4);
-        layer3.Translate(3200, -3200);
+        layer3.Translate(320, -320);
         layer3.Transform();
 
-        BlueFox.MapScreenSize.Width = layer1.LayerCanvas().width;
-        BlueFox.MapScreenSize.Height = layer1.LayerCanvas().height;
-
-        var layer2 = BlueFox.CreateBFLayer(BlueFox.MapScreenSize.Width, BlueFox.MapScreenSize.Height);
+        var layer2 = BlueFox.CreateBFLayer(640, 640);
         layer2.Index = 2;
         layer2.StrokeStyle('orange');
 
@@ -64,6 +61,7 @@ function Load()
         BlueFox.DebugSwitch = true;
         BlueFox.Run();
 
+        //alert(building.CenterLocation.X + ',' + building.CenterLocation.Y);
         BFCanvas.SetCenterLocation(building.CenterLocation.X, building.CenterLocation.Y);
     }
     catch (ex)

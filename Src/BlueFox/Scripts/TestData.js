@@ -7,7 +7,7 @@
  */
 function GetResourceList()
 {
-    var str = '[{"ResourceId":"1","ImageFilePath":"./Resource/Img/mapCell.png"},{"ResourceId":"2","ImageFilePath":"./Resource/Img/o.png"}]';
+    var str = '[{"ResourceId":"1","ImageFilePath":"./Resource/Img/o.png"},{"ResourceId":"2","ImageFilePath":"./Resource/Img/o.png"}]';
     return JSON.parse(str);
 }
 
