@@ -36,5 +36,9 @@ namespace BlueFox.Common.Interface
             get;
             set;
         }
+
+        void SetImage(int resourceId);
+
+        bool Contains(Location point);
     }
 }

@@ -5,15 +5,15 @@ using System.Text;
 
 namespace BlueFox.Common
 {
-    public class Location
+    public class Direction
     {
-        public double X
+        public int DX
         {
             get;
             set;
         }
 
-        public double Y
+        public int DY
         {
             get;
             set;

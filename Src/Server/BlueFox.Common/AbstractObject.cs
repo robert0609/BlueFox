@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace BlueFox.Object
+namespace BlueFox.Common
 {
-    public class BFObject : IDisposable
+    public abstract class AbstractObject : IDisposable
     {
         public Guid UniqueID
         {
@@ -13,14 +13,14 @@ namespace BlueFox.Object
             private set;
         }
 
-        public BFObject()
+        public AbstractObject()
         {
             this.UniqueID = Guid.NewGuid();
         }
 
         public virtual void Dispose()
         {
-
+            throw new NotImplementedException();
         }
     }
 }
