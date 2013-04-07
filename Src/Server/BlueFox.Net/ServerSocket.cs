@@ -135,17 +135,17 @@ namespace BOC.COS.Network
             }
         }
 
-        void session_SessionStarted(object sender, SessionEventArgs e)
+        private void session_SessionStarted(object sender, SessionEventArgs e)
         {
             this.OnSesstionStarted(e.Session);
         }
 
-        void session_MessageReceived(object sender, MessageEventArgs e)
+        private void session_MessageReceived(object sender, MessageEventArgs e)
         {
             this.OnMessageReceived(sender as ServerSession, e);
         }
 
-        void session_SessionEnded(object sender, SessionEventArgs e)
+        private void session_SessionEnded(object sender, SessionEventArgs e)
         {
             this.OnSessionEnded(e.Session.Handle);
         }

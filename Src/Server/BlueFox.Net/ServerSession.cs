@@ -1,14 +1,4 @@
-﻿/*
- * 作业系统Socket通讯服务器端会话
-/****************************************************************
- * Copyright (C) Microsoft Corporation
- * 创建人员(日期):向丹峰(130311 16:06)
- * 描述: socket通讯服务器端会话类
- * 
- * 服务器端监听指定的tcp端口，异步接收客户端连接，
- * 创建新的套接字维持到客户端的连接，直到连接关闭，
- * 在此期间将创建会话。
-*****************************************************************/
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +48,7 @@ namespace BOC.COS.Network
             private set;
         }
 
-        public ServerSession(Socket sck,ServerSocket server)
+        public ServerSession(Socket sck, ServerSocket server)
         {
             this.Socket = sck;
             this.Server = server;

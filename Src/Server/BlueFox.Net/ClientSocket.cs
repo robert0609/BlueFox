@@ -13,10 +13,6 @@ namespace BOC.COS.Network
 {
     public class ClientSocket : IDisposable 
     {
-        /// <summary>
-        /// 套接字
-        /// </summary>
-        /// <remarks>创建人员(日期): 向丹峰(130311 16:13)</remarks>
         protected internal Socket Socket
         {
             get;
