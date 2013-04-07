@@ -7,13 +7,13 @@ namespace BlueFox.Common
 {
     public class Size
     {
-        public int Width
+        public Number Width
         {
             get;
             set;
         }
 
-        public int Height
+        public Number Height
         {
             get;
             set;

@@ -7,37 +7,37 @@ namespace BlueFox.Common
 {
     public class Matrix
     {
-        public double A
+        public Number A
         {
             get;
             private set;
         }
 
-        public double B
+        public Number B
         {
             get;
             private set;
         }
 
-        public double C
+        public Number C
         {
             get;
             private set;
         }
 
-        public double D
+        public Number D
         {
             get;
             private set;
         }
 
-        public double E
+        public Number E
         {
             get;
             private set;
         }
 
-        public double F
+        public Number F
         {
             get;
             private set;
@@ -45,12 +45,12 @@ namespace BlueFox.Common
 
         public Matrix()
         {
-            this.A = 1;
-            this.B = 0;
-            this.C = 0;
-            this.D = 1;
-            this.E = 0;
-            this.F = 0;
+            this.A = new Number(1d);
+            this.B = new Number(0d);
+            this.C = new Number(0d);
+            this.D = new Number(1d);
+            this.E = new Number(0d);
+            this.F = new Number(0d);
         }
 
         public Matrix Multiply(Matrix n)
@@ -62,6 +62,13 @@ namespace BlueFox.Common
             var d = m.B * n.C + m.D * n.D;
             var e = m.A * n.E + m.C * n.F + m.E;
             var f = m.B * n.E + m.D * n.F + m.F;
+            this.A = a;
+            this.B = b;
+            this.C = c;
+            this.D = d;
+            this.E = e;
+            this.F = f;
+            return this;
         }
     }
 }

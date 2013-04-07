@@ -19,7 +19,7 @@ namespace BlueFox.Common.Interface
             set;
         }
 
-        int Radius
+        Number Radius
         {
             get;
             set;
@@ -31,29 +31,29 @@ namespace BlueFox.Common.Interface
             set;
         }
 
-        int Width
+        Number Width
         {
             get;
         }
 
-        int Height
+        Number Height
         {
             get;
         }
 
-        int KW
+        Number KW
         {
             get;
         }
 
-        int KH
+        Number KH
         {
             get;
         }
 
         bool CheckConflict(IFoundation foundation);
 
-        void Cast2Map(AbstractLayer layer);
+        void Cast2Layer(AbstractLayer layer);
     }
 
     public enum FoundationKind

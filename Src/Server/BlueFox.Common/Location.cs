@@ -7,13 +7,13 @@ namespace BlueFox.Common
 {
     public class Location
     {
-        public double X
+        public Number X
         {
             get;
             set;
         }
 
-        public double Y
+        public Number Y
         {
             get;
             set;

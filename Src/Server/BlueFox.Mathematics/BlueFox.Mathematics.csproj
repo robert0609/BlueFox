@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{395F0343-E02C-4197-9278-B79A96C280A8}</ProjectGuid>
+    <ProjectGuid>{948976F5-9FBC-4635-8F24-BA8916BC3487}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BlueFox.Common</RootNamespace>
-    <AssemblyName>BlueFox.Common</AssemblyName>
+    <RootNamespace>BlueFox.Mathematics</RootNamespace>
+    <AssemblyName>BlueFox.Mathematics</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,21 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractLayer.cs" />
-    <Compile Include="AbstractObject.cs" />
-    <Compile Include="Number.cs" />
-    <Compile Include="Direction.cs" />
-    <Compile Include="Interface\ICollision.cs" />
-    <Compile Include="Interface\IFoundation.cs" />
-    <Compile Include="Interface\IMovable.cs" />
-    <Compile Include="Interface\IRender.cs" />
-    <Compile Include="Interface\ITransform.cs" />
-    <Compile Include="Location.cs" />
-    <Compile Include="Matrix.cs" />
+    <Compile Include="Angle.cs" />
+    <Compile Include="Computer.cs" />
+    <Compile Include="Extension.cs" />
+    <Compile Include="Fraction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Size.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
