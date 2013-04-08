@@ -1,8 +1,4 @@
-﻿/*
- * 作业系统服务器通讯状态类
- * 向丹峰 2013.3.7
- */
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;

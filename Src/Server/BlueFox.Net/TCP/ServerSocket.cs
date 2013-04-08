@@ -1,0 +1,241 @@
+﻿
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using System.Net.Sockets;
+using System.Threading;
+
+namespace BOC.COS.Network
+{
+    public class ServerSocket : IDisposable
+    {
+        public event SessionEventHandler SessionEnded;
+        public event SessionEventHandler SessionException;
+        public event SessionEventHandler SessionStarted;
+        public event MessageReceivedEventHandler MessageReceived;
+
+        /// <summary>
+        /// Session过期时间，秒
+        /// </summary>
+        public int SessionTimeOut
+        {
+            get;
+            set;
+        }
+
+        public IPEndPoint LocalEndPoint
+        {
+            get;
+            private set;
+        }
+
+        protected Socket Socket
+        {
+            get;
+            private set;
+        }
+
+        public bool IsRunning
+        {
+            get;
+            private set;
+        }
+
+        private Thread _thread;
+
+        private Thread _monitorThread;
+
+        private Dictionary<int, AbstractSession> _sessionList = new Dictionary<int, AbstractSession>();
+
+        public ServerSocket(IPEndPoint lep)
+        {
+            this.LocalEndPoint = lep;
+            this.SessionTimeOut = 10;
+        }
+
+        private void LoopTimeOut()
+        {
+            try
+            {
+                while (true)
+                {
+                    Thread.Sleep(10000);
+                    List<ServerSession> timeOutList = new List<ServerSession>();
+                    lock (this._sessionList)
+                    {
+                        foreach (KeyValuePair<int, ServerSession> obj in this._sessionList)
+                        {
+                            TimeSpan ts = DateTime.Now - obj.Value.LastActiveTime;
+                            if (ts.TotalSeconds > this.SessionTimeOut)
+                            {
+                                timeOutList.Add(obj.Value);
+                            }
+                        }
+                    }
+                    foreach (var session in timeOutList)
+                    {
+                        session.StopSession();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO
+                throw new Exception("监控线程报错", ex);
+            }
+        }
+
+        public void Start()
+        {
+            this._thread = new Thread(new ThreadStart(this.Listen));
+            this._thread.IsBackground = true;
+
+            this._monitorThread = new Thread(new ThreadStart(this.LoopTimeOut));
+            this._monitorThread.IsBackground = true;
+
+            this._thread.Start();
+            this._monitorThread.Start();
+        }
+
+        public void Stop()
+        {
+            this.Dispose();
+        }
+
+        private void Listen()
+        {
+            this.Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            this.Socket.Bind(this.LocalEndPoint);
+            this.Socket.Listen(100);
+            this.IsRunning = true;
+            try
+            {
+                while (this.IsRunning)
+                {
+                    var sck = this.Socket.Accept();
+                    ServerSession session = new ServerSession(sck);
+                    session.SessionStarted += session_SessionStarted;
+                    session.SessionEnded += session_SessionEnded;
+                    session.SessionException += session_SessionException;
+                    session.MessageReceived += session_MessageReceived;
+                    session.StartSession();
+                }
+            }
+            catch (Exception ex)
+            {
+                //TODO
+                throw new Exception("服务端Socket发生异常", ex);
+            }
+            finally
+            {
+                this.IsRunning = false;
+                if (this.Socket.Connected)
+                {
+                    this.Socket.Shutdown(SocketShutdown.Both);
+                }
+                this.Socket.Close();
+                this.Socket.Dispose();
+                this.Socket = null;
+            }
+        }
+
+        private void session_SessionStarted(object sender, SessionEventArgs e)
+        {
+            this.OnSesstionStarted(e.Session);
+        }
+
+        private void session_MessageReceived(object sender, MessageEventArgs e)
+        {
+            this.OnMessageReceived(sender as ServerSession, e);
+        }
+
+        private void session_SessionEnded(object sender, SessionEventArgs e)
+        {
+            this.OnSessionEnded(e.Session.Handle);
+        }
+
+        private void session_SessionException(object sender, SessionEventArgs e)
+        {
+            this.OnSessionException(e.Session, e.SessionException);
+        }
+
+        protected virtual void OnMessageReceived(AbstractSession session, MessageEventArgs e)
+        {
+            if (this.MessageReceived != null)
+            {
+                this.MessageReceived(this, e);
+            }
+        }
+
+        protected virtual void OnSesstionStarted(AbstractSession session)
+        {
+            lock (this._sessionList)
+            {
+                this._sessionList[session.Handle] = session;
+            }
+
+            if (this.SessionStarted != null)
+            {
+                this.SessionStarted(this, new SessionEventArgs(session));
+            }
+        }
+
+        protected virtual void OnSessionEnded(int handle)
+        {
+            if (this._sessionList.ContainsKey(handle))
+            {
+                ServerSession session;
+                lock (this._sessionList)
+                {
+                    session = this._sessionList[handle];
+                    this._sessionList.Remove(handle);
+                }
+
+                if (this.SessionEnded != null)
+                {
+                    this.SessionEnded(this, new SessionEventArgs(session));
+                }
+            }
+        }
+
+        protected virtual void OnSessionException(AbstractSession session, Exception ex)
+        {
+            if (this.SessionException != null)
+            {
+                this.SessionException(this, new SessionEventArgs(session, ex);
+            }
+        }
+
+        public void Dispose()
+        {
+            lock (this._sessionList)
+            {
+                foreach (var session in this._sessionList.Values)
+                {
+                    session.Dispose();
+                }
+            }
+            if (this.IsRunning)
+            {
+                this._thread.Abort();
+                this._thread = null;
+                this.IsRunning = false;
+                if (this.Socket.Connected)
+                {
+                    this.Socket.Shutdown(SocketShutdown.Both);
+                }
+                this.Socket.Close();
+                this.Socket.Dispose();
+                this.Socket = null;
+            }
+            if (this._monitorThread != null)
+            {
+                this._monitorThread.Abort();
+                this._monitorThread = null;
+            }
+        }
+    }
+}

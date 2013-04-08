@@ -8,17 +8,29 @@ namespace BOC.COS.Network
 {
     public class SessionEventArgs: EventArgs 
     {
-        public ServerSession Session
+        public AbstractSession Session
         {
             get;
             private set;
         }
 
-        public SessionEventArgs(ServerSession session)
+        public Exception SessionException
+        {
+            get;
+            private set;
+        }
+
+        public SessionEventArgs(AbstractSession session)
             : base()
 	    {
             this.Session = session;
 	    }
+
+        public SessionEventArgs(AbstractSession session, Exception ex)
+            : this(session)
+        {
+            this.SessionException = ex;
+        }
     }
 
     public delegate void SessionEventHandler(object sender ,SessionEventArgs e);
@@ -30,11 +42,13 @@ namespace BOC.COS.Network
             get;
             private set;
         }
+
         public string Body
         {
             get;
             private set;
         }
+
         public MessageEventArgs(string header,string body)
         {
             this.Header = header;

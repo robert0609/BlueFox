@@ -40,14 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TCP\AbstractSession.cs" />
+    <Compile Include="TCP\ClientSession.cs" />
     <Compile Include="ClientSocket.cs" />
-    <Compile Include="ConnectFailledException.cs" />
-    <Compile Include="Delegates.cs" />
+    <Compile Include="TCP\Delegates.cs" />
     <Compile Include="MessageHeader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerSession.cs" />
-    <Compile Include="ServerSocket.cs" />
-    <Compile Include="StateObject.cs" />
+    <Compile Include="TCP\ServerSession.cs" />
+    <Compile Include="TCP\ServerSocket.cs" />
+    <Compile Include="TCP\StateObject.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
