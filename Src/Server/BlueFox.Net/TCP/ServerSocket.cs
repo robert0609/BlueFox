@@ -63,10 +63,10 @@ namespace BOC.COS.Network
                 while (true)
                 {
                     Thread.Sleep(10000);
-                    List<ServerSession> timeOutList = new List<ServerSession>();
+                    List<AbstractSession> timeOutList = new List<AbstractSession>();
                     lock (this._sessionList)
                     {
-                        foreach (KeyValuePair<int, ServerSession> obj in this._sessionList)
+                        foreach (var obj in this._sessionList)
                         {
                             TimeSpan ts = DateTime.Now - obj.Value.LastActiveTime;
                             if (ts.TotalSeconds > this.SessionTimeOut)
@@ -116,7 +116,7 @@ namespace BOC.COS.Network
                 while (this.IsRunning)
                 {
                     var sck = this.Socket.Accept();
-                    ServerSession session = new ServerSession(sck);
+                    AbstractSession session = new ServerSession(sck);
                     session.SessionStarted += session_SessionStarted;
                     session.SessionEnded += session_SessionEnded;
                     session.SessionException += session_SessionException;
@@ -149,7 +149,7 @@ namespace BOC.COS.Network
 
         private void session_MessageReceived(object sender, MessageEventArgs e)
         {
-            this.OnMessageReceived(sender as ServerSession, e);
+            this.OnMessageReceived(sender as AbstractSession, e);
         }
 
         private void session_SessionEnded(object sender, SessionEventArgs e)
@@ -187,7 +187,7 @@ namespace BOC.COS.Network
         {
             if (this._sessionList.ContainsKey(handle))
             {
-                ServerSession session;
+                AbstractSession session;
                 lock (this._sessionList)
                 {
                     session = this._sessionList[handle];
@@ -205,7 +205,7 @@ namespace BOC.COS.Network
         {
             if (this.SessionException != null)
             {
-                this.SessionException(this, new SessionEventArgs(session, ex);
+                this.SessionException(this, new SessionEventArgs(session, ex));
             }
         }
 
@@ -217,6 +217,11 @@ namespace BOC.COS.Network
                 {
                     session.Dispose();
                 }
+            }
+            if (this._monitorThread != null)
+            {
+                this._monitorThread.Abort();
+                this._monitorThread = null;
             }
             if (this.IsRunning)
             {
@@ -230,11 +235,6 @@ namespace BOC.COS.Network
                 this.Socket.Close();
                 this.Socket.Dispose();
                 this.Socket = null;
-            }
-            if (this._monitorThread != null)
-            {
-                this._monitorThread.Abort();
-                this._monitorThread = null;
             }
         }
     }
