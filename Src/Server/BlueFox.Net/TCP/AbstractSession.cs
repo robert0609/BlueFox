@@ -142,29 +142,34 @@ namespace BOC.COS.Network
             }
         }
 
-        public bool SendMessage(string head, string msg)
+        public void SendMessage(string head, string msg)
         {
-            //TODO
+            if (!this.Actived)
+            {
+                return;
+            }
             byte[] hbuf = System.Text.Encoding.UTF8.GetBytes(head);
             if (head.Length != MessageHeader.MH_HEADLENGTH)
             {
                 throw new ArgumentException("head length is not correct");
             }
-            bool result = false;
             byte[] buf = System.Text.Encoding.UTF8.GetBytes(string.Format("{0} {1}", head, msg));
             try
             {
-                result = this.Socket.Send(buf) == buf.Length;
+                var result = this.Socket.Send(buf) == buf.Length;
+                if (!result)
+                {
+                    throw new Exception("发送数据不完整");
+                }
             }
             catch (SocketException ex)
             {
-                result = false;
+                throw ex;
             }
             catch (Exception ex)
             {
-                result = false;
+                throw ex;
             }
-            return result;
         }
 
         public virtual void Dispose()

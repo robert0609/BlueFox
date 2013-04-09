@@ -25,7 +25,7 @@ namespace BOC.COS.Network
                     //TODO:回发一个心跳
                     return;
                 case MessageHeader.MH_SERVERSTOP:
-                    //TODO
+                    //TODO:收到断开连接命令
                     return;
                 default:
                     break;

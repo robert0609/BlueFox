@@ -50,10 +50,22 @@ namespace BOC.COS.Network
 
         private Dictionary<int, AbstractSession> _sessionList = new Dictionary<int, AbstractSession>();
 
+        private object _sync = new object();
+
         public ServerSocket(IPEndPoint lep)
         {
             this.LocalEndPoint = lep;
             this.SessionTimeOut = 10;
+        }
+
+        public void StartMonitor()
+        {
+            if (this._monitorThread == null)
+            {
+                this._monitorThread = new Thread(new ThreadStart(this.LoopTimeOut));
+                this._monitorThread.IsBackground = true;
+                this._monitorThread.Start();
+            }
         }
 
         private void LoopTimeOut()
@@ -64,7 +76,7 @@ namespace BOC.COS.Network
                 {
                     Thread.Sleep(10000);
                     List<AbstractSession> timeOutList = new List<AbstractSession>();
-                    lock (this._sessionList)
+                    lock (this._sync)
                     {
                         foreach (var obj in this._sessionList)
                         {
@@ -83,25 +95,31 @@ namespace BOC.COS.Network
             }
             catch (Exception ex)
             {
-                //TODO
+                //TODO:记录监控线程异常日志
                 throw new Exception("监控线程报错", ex);
             }
         }
 
         public void Start()
         {
-            this._thread = new Thread(new ThreadStart(this.Listen));
-            this._thread.IsBackground = true;
-
-            this._monitorThread = new Thread(new ThreadStart(this.LoopTimeOut));
-            this._monitorThread.IsBackground = true;
-
-            this._thread.Start();
-            this._monitorThread.Start();
+            if (this._thread == null)
+            {
+                this._thread = new Thread(new ThreadStart(this.Listen));
+                this._thread.IsBackground = true;
+                this._thread.Start();
+            }
         }
 
         public void Stop()
         {
+            lock (this._sync)
+            {
+                foreach (var obj in this._sessionList.Values)
+                {
+                    //TODO:断开连接命令定义
+                    obj.SendMessage(MessageHeader.MH_SERVERSTOP, "");
+                }
+            }
             this.Dispose();
         }
 
@@ -126,7 +144,7 @@ namespace BOC.COS.Network
             }
             catch (Exception ex)
             {
-                //TODO
+                //TODO:记录服务端监听线程的异常日志
                 throw new Exception("服务端Socket发生异常", ex);
             }
             finally
@@ -172,7 +190,7 @@ namespace BOC.COS.Network
 
         protected virtual void OnSesstionStarted(AbstractSession session)
         {
-            lock (this._sessionList)
+            lock (this._sync)
             {
                 this._sessionList[session.Handle] = session;
             }
@@ -185,18 +203,17 @@ namespace BOC.COS.Network
 
         protected virtual void OnSessionEnded(int handle)
         {
-            if (this._sessionList.ContainsKey(handle))
+            lock (this._sync)
             {
-                AbstractSession session;
-                lock (this._sessionList)
+                if (this._sessionList.ContainsKey(handle))
                 {
-                    session = this._sessionList[handle];
+                    AbstractSession session = this._sessionList[handle];
                     this._sessionList.Remove(handle);
-                }
 
-                if (this.SessionEnded != null)
-                {
-                    this.SessionEnded(this, new SessionEventArgs(session));
+                    if (this.SessionEnded != null)
+                    {
+                        this.SessionEnded(this, new SessionEventArgs(session));
+                    }
                 }
             }
         }
@@ -211,22 +228,18 @@ namespace BOC.COS.Network
 
         public void Dispose()
         {
-            lock (this._sessionList)
-            {
-                foreach (var session in this._sessionList.Values)
-                {
-                    session.Dispose();
-                }
-            }
             if (this._monitorThread != null)
             {
                 this._monitorThread.Abort();
                 this._monitorThread = null;
             }
-            if (this.IsRunning)
+            if (this._thread != null)
             {
                 this._thread.Abort();
                 this._thread = null;
+            }
+            if (this.IsRunning)
+            {
                 this.IsRunning = false;
                 if (this.Socket.Connected)
                 {
@@ -235,6 +248,14 @@ namespace BOC.COS.Network
                 this.Socket.Close();
                 this.Socket.Dispose();
                 this.Socket = null;
+            }
+            lock (this._sync)
+            {
+                foreach (var session in this._sessionList.Values)
+                {
+                    session.Dispose();
+                }
+                this._sessionList = new Dictionary<int, AbstractSession>();
             }
         }
     }

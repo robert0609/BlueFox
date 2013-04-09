@@ -36,22 +36,30 @@ namespace BOC.COS.Network
             set;
         }
 
-        public bool IsConnected
-        {
-            get;
-            private set;
-        }
-
         private Thread _heartBeatThread;
 
         private Thread _monitorThread;
 
         private AbstractSession _session;
 
+        private object _sync = new object();
+
+        private ManualResetEvent _manualEvent = new ManualResetEvent(true);
+
         public ClientSocket()
         {
             this.HeartBeatInterval = 1000;
             this.SessionTimeOut = 10;
+        }
+
+        public void StartMonitor()
+        {
+            if (this._monitorThread == null)
+            {
+                this._monitorThread = new Thread(new ThreadStart(this.LoopTimeOut));
+                this._monitorThread.IsBackground = true;
+                this._monitorThread.Start();
+            }
         }
 
         private void LoopTimeOut()
@@ -61,54 +69,91 @@ namespace BOC.COS.Network
                 while (true)
                 {
                     Thread.Sleep(10000);
-                    TimeSpan ts = DateTime.Now - this._session.LastActiveTime;
-                    if (ts.TotalSeconds > this.SessionTimeOut)
+                    AbstractSession session = null;
+                    lock (this._sync)
                     {
-                        this._session.StopSession();
+                        if (this._session != null)
+                        {
+                            TimeSpan ts = DateTime.Now - this._session.LastActiveTime;
+                            if (ts.TotalSeconds > this.SessionTimeOut)
+                            {
+                                session = this._session;
+                            }
+                        }
+                    }
+                    if (session != null)
+                    {
+                        session.StopSession();
                     }
                 }
             }
             catch (Exception ex)
             {
-                //TODO
+                //TODO:记录监控线程异常日志
                 throw new Exception("监控线程报错", ex);
             }
         }
 
-        private void StartHeartBeat()
+        public void StartHeartBeat()
+        {
+            if (this._heartBeatThread == null)
+            {
+                this._heartBeatThread = new Thread(new ThreadStart(this.LoopHeartBeat));
+                this._heartBeatThread.IsBackground = true;
+                this._heartBeatThread.Start();
+            }
+        }
+
+        private void LoopHeartBeat()
         {
             while (true)
             {
-                this._session.SendMessage(MessageHeader.MH_HEARTBEAT, "");
+                lock (this._sync)
+                {
+                    if (this._session != null)
+                    {
+                        this._session.SendMessage(MessageHeader.MH_HEARTBEAT, "");
+                    }
+                }
                 Thread.Sleep(this.HeartBeatInterval);
             }
         }
 
         public void Connect(IPEndPoint rep)
         {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(rep);
-            var session = new ClientSession(socket);
-            this._session = session;
-            this.IsConnected = true;
-            session.SessionStarted += session_SessionStarted;
-            session.SessionEnded += session_SessionEnded;
-            session.SessionException += session_SessionException;
-            session.MessageReceived += session_MessageReceived;
-            session.StartSession();
-
-            this._heartBeatThread = new Thread(new ThreadStart(this.StartHeartBeat));
-            this._heartBeatThread.IsBackground = true;
-
-            this._monitorThread = new Thread(new ThreadStart(this.LoopTimeOut));
-            this._monitorThread.IsBackground = true;
-
-            this._heartBeatThread.Start();
-            this._monitorThread.Start();
+            if (this._session != null)
+            {
+                return;
+            }
+            try
+            {
+                this._manualEvent.Reset();
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                socket.Connect(rep);
+                var session = new ClientSession(socket);
+                session.SessionStarted += session_SessionStarted;
+                session.SessionEnded += session_SessionEnded;
+                session.SessionException += session_SessionException;
+                session.MessageReceived += session_MessageReceived;
+                session.StartSession();
+                this._manualEvent.WaitOne();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Connect出现异常", ex);
+            }
         }
 
         public void Disconnect()
         {
+            lock (this._sync)
+            {
+                if (this._session != null)
+                {
+                    //TODO:断开连接命令定义
+                    this._session.SendMessage(MessageHeader.MH_SERVERSTOP, "");
+                }
+            }
             this.Dispose();
         }
 
@@ -142,6 +187,11 @@ namespace BOC.COS.Network
 
         protected virtual void OnSesstionStarted(AbstractSession session)
         {
+            lock (this._sync)
+            {
+                this._session = session;
+                this._manualEvent.Set();
+            }
             if (this.SessionStarted != null)
             {
                 this.SessionStarted(this, new SessionEventArgs(session));
@@ -150,8 +200,10 @@ namespace BOC.COS.Network
 
         protected virtual void OnSessionEnded(AbstractSession session)
         {
-            this._session = null;
-            this.IsConnected = false;
+            lock (this._sync)
+            {
+                this._session = null;
+            }
             if (this.SessionEnded != null)
             {
                 this.SessionEnded(this, new SessionEventArgs(session));
@@ -178,11 +230,13 @@ namespace BOC.COS.Network
                 this._heartBeatThread.Abort();
                 this._heartBeatThread = null;
             }
-            if (this.IsConnected)
+            lock (this._sync)
             {
-                //TODO
-                this._session.SendMessage(MessageHeader.MH_SERVERSTOP, "");
-                this._session.StopSession();
+                if (this._session != null)
+                {
+                    this._session.Dispose();
+                    this._session = null;
+                }
             }
         }
     }
