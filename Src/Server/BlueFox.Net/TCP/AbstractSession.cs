@@ -79,7 +79,7 @@ namespace BOC.COS.Network
                     int read = obj.Socket.Receive(obj.Buffer, 0, obj.Buffer.Length, SocketFlags.None);
                     this.LastActiveTime = DateTime.Now;
                     string msg = System.Text.Encoding.UTF8.GetString(obj.Buffer, 0, read);
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(this.HandleMessage), msg);
+                    this.HandleMessage(msg);
                 }
             }
             catch (Exception ex)
@@ -100,14 +100,23 @@ namespace BOC.COS.Network
             }
         }
 
-        private void HandleMessage(object msgObj)
+        private void HandleMessage(string msg)
         {
-            string msg = msgObj as string;
             if (msg.Length < MessageHeader.MH_HEADLENGTH)
             {
                 return;
             }
-            this.OnMessageReceived(msg.Substring(0, MessageHeader.MH_HEADLENGTH), msg.Substring(MessageHeader.MH_HEADLENGTH + 1));
+            var header = msg.Substring(0, MessageHeader.MH_HEADLENGTH).ToUpper();
+            var body = msg.Substring(MessageHeader.MH_HEADLENGTH + 1);
+            switch (header)
+            {
+                case MessageHeader.MH_SERVERSTOP:
+                    this.Actived = false;
+                    return;
+                default:
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(this.OnMessageReceived), new MessageEventArgs(header, body));
+                    break;
+            }
         }
 
         protected virtual void OnSessionStarted()
@@ -134,11 +143,11 @@ namespace BOC.COS.Network
             }
         }
 
-        protected virtual void OnMessageReceived(string header, string body)
+        protected virtual void OnMessageReceived(object arg)
         {
             if (this.MessageReceived != null)
             {
-                this.MessageReceived(this, new MessageEventArgs(header, body));
+                this.MessageReceived(this, arg as MessageEventArgs);
             }
         }
 

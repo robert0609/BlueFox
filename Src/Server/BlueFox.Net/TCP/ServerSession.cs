@@ -17,20 +17,18 @@ namespace BOC.COS.Network
         {
         }
 
-        protected override void OnMessageReceived(string header, string body)
+        protected override void OnMessageReceived(object arg)
         {
-            switch (header.ToUpper())
+            var msg = arg as MessageEventArgs;
+            switch (msg.Header)
             {
                 case MessageHeader.MH_HEARTBEAT:
                     //TODO:回发一个心跳
                     return;
-                case MessageHeader.MH_SERVERSTOP:
-                    //TODO:收到断开连接命令
-                    return;
                 default:
                     break;
             }
-            base.OnMessageReceived(header, body);
+            base.OnMessageReceived(arg);
         }
     }
 }
