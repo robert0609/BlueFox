@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace BOC.COS.Network
+namespace BlueFox.Net.TCP
 {
     public class ServerSocket : IDisposable
     {
@@ -112,13 +112,20 @@ namespace BOC.COS.Network
 
         public void Stop()
         {
-            lock (this._sync)
+            try
             {
-                foreach (var obj in this._sessionList.Values)
+                lock (this._sync)
                 {
-                    //TODO:断开连接命令定义
-                    obj.SendMessage(MessageHeader.MH_SERVERSTOP, "");
+                    foreach (var obj in this._sessionList.Values)
+                    {
+                        obj.SendMessage(MessageHeader.MH_BREAKOFF, string.Empty);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                //记录断开连接异常日志
+                throw new Exception("服务端停止出现异常", ex);
             }
             this.Dispose();
         }

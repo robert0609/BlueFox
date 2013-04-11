@@ -5,7 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace BOC.COS.Network
+namespace BlueFox.Net.TCP
 {
     public abstract class AbstractSession : IDisposable
     {
@@ -107,10 +107,10 @@ namespace BOC.COS.Network
                 return;
             }
             var header = msg.Substring(0, MessageHeader.MH_HEADLENGTH).ToUpper();
-            var body = msg.Substring(MessageHeader.MH_HEADLENGTH + 1);
+            var body = msg.Substring(MessageHeader.MH_HEADLENGTH);
             switch (header)
             {
-                case MessageHeader.MH_SERVERSTOP:
+                case MessageHeader.MH_BREAKOFF:
                     this.Actived = false;
                     return;
                 default:
@@ -162,7 +162,7 @@ namespace BOC.COS.Network
             {
                 throw new ArgumentException("head length is not correct");
             }
-            byte[] buf = System.Text.Encoding.UTF8.GetBytes(string.Format("{0} {1}", head, msg));
+            byte[] buf = System.Text.Encoding.UTF8.GetBytes(string.Format("{0}{1}", head, msg));
             try
             {
                 var result = this.Socket.Send(buf) == buf.Length;

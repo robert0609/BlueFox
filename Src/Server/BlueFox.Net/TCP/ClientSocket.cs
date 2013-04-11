@@ -9,7 +9,7 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 
-namespace BOC.COS.Network
+namespace BlueFox.Net.TCP
 {
     public class ClientSocket : IDisposable
     {
@@ -106,16 +106,24 @@ namespace BOC.COS.Network
 
         private void LoopHeartBeat()
         {
-            while (true)
+            try
             {
-                lock (this._sync)
+                while (true)
                 {
-                    if (this._session != null)
+                    lock (this._sync)
                     {
-                        this._session.SendMessage(MessageHeader.MH_HEARTBEAT, "");
+                        if (this._session != null)
+                        {
+                            this._session.SendMessage(MessageHeader.MH_HEARTBEAT, string.Empty);
+                        }
                     }
+                    Thread.Sleep(this.HeartBeatInterval);
                 }
-                Thread.Sleep(this.HeartBeatInterval);
+            }
+            catch (Exception ex)
+            {
+                //TODO:记录心跳线程异常日志
+                throw new Exception("客户端心跳线程报错", ex);
             }
         }
 
@@ -146,15 +154,25 @@ namespace BOC.COS.Network
 
         public void Disconnect()
         {
-            lock (this._sync)
+            try
             {
-                if (this._session != null)
+                lock (this._sync)
                 {
-                    //TODO:断开连接命令定义
-                    this._session.SendMessage(MessageHeader.MH_SERVERSTOP, "");
+                    if (this._session != null)
+                    {
+                        this._session.SendMessage(MessageHeader.MH_BREAKOFF, string.Empty);
+                    }
                 }
             }
-            this.Dispose();
+            catch (Exception ex)
+            {
+                //记录断开连接异常日志
+                throw new Exception("客户端断开连接出现异常", ex);
+            }
+            finally
+            {
+                this.Dispose();
+            }
         }
 
         private void session_SessionStarted(object sender, SessionEventArgs e)

@@ -9,7 +9,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 
-namespace BOC.COS.Network
+namespace BlueFox.Net.TCP
 {
     public class StateObject
     {

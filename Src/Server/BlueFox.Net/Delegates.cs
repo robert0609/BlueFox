@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BlueFox.Net.TCP;
 
-namespace BOC.COS.Network
+namespace BlueFox.Net
 {
     public class SessionEventArgs: EventArgs 
     {

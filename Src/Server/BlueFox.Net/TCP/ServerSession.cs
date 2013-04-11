@@ -9,7 +9,7 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 
-namespace BOC.COS.Network
+namespace BlueFox.Net.TCP
 {
     public class ServerSession : AbstractSession
     {
@@ -23,7 +23,7 @@ namespace BOC.COS.Network
             switch (msg.Header)
             {
                 case MessageHeader.MH_HEARTBEAT:
-                    //TODO:回发一个心跳
+                    this.SendMessage(MessageHeader.MH_HEARTBEAT, string.Empty);
                     return;
                 default:
                     break;
