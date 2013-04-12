@@ -12,13 +12,14 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            ClientSocket sck = new ClientSocket();
-            sck.SessionStarted += new BlueFox.Net.SessionEventHandler(sck_SessionStarted);
-            sck.SessionEnded += new BlueFox.Net.SessionEventHandler(sck_SessionEnded);
-            sck.MessageReceived += new BlueFox.Net.MessageReceivedEventHandler(sck_MessageReceived);
-            sck.SessionException += new SessionEventHandler(sck_SessionException);
-            sck.Connect(new IPEndPoint(IPAddress.Parse("192.168.56.101"), 8888));
-            sck.Send("HTDD", "send");
+            Console.WriteLine(byte.Parse("FF", System.Globalization.NumberStyles.HexNumber));
+            //ClientSocket sck = new ClientSocket();
+            //sck.SessionStarted += new BlueFox.Net.SessionEventHandler(sck_SessionStarted);
+            //sck.SessionEnded += new BlueFox.Net.SessionEventHandler(sck_SessionEnded);
+            //sck.MessageReceived += new BlueFox.Net.MessageReceivedEventHandler(sck_MessageReceived);
+            //sck.SessionException += new SessionEventHandler(sck_SessionException);
+            //sck.Connect(new IPEndPoint(IPAddress.Parse("192.168.56.101"), 8888));
+            ////sck.Send("HTDD", "send");
             Console.ReadKey();
         }
 
