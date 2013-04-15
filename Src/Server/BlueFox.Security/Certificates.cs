@@ -9,7 +9,8 @@ namespace BlueFox.Security
 {
     public sealed class Certificates
     {
-        private const string CERT_FILE_NAME = "rootCA.cert";
+        private const string PUBLIC_KEY_FILE_NAME = "PublicKey.ck";
+        private const string PRIVATE_KEY_FILE_NAME = "PrivateKey.ck";
 
         private const string CERT_D = "D:{0}";
         private const string CERT_DP = "DP:{0}";
@@ -32,7 +33,15 @@ namespace BlueFox.Security
         public string Export(string outPath, bool expPrivate)
         {
             var expParam = this._rsa.ExportParameters(expPrivate);
-            var fileName = outPath + CERT_FILE_NAME;
+            var fileName = outPath;
+            if (expPrivate)
+            {
+                fileName += PRIVATE_KEY_FILE_NAME;
+            }
+            else
+            {
+                fileName += PUBLIC_KEY_FILE_NAME;
+            }
             using (StreamWriter sw = new StreamWriter(fileName, false, Encoding.UTF8))
             {
                 sw.WriteLine(CERT_D, this.ByteList2String(expParam.D));
@@ -49,10 +58,9 @@ namespace BlueFox.Security
             return fileName;
         }
 
-        public void Import(string inPath)
+        public void Import(string fileName)
         {
             RSAParameters impParam = new RSAParameters();
-            var fileName = inPath + CERT_FILE_NAME;
             if (!File.Exists(fileName))
             {
                 throw new FileNotFoundException(string.Format("{0} is not found.", fileName));
@@ -100,7 +108,7 @@ namespace BlueFox.Security
 
         private string ByteList2String(byte[] bytes)
         {
-            if (bytes.Length < 1)
+            if (bytes == null || bytes.Length < 1)
             {
                 return string.Empty;
             }
@@ -115,11 +123,11 @@ namespace BlueFox.Security
 
         private byte[] String2ByteList(string str)
         {
-            IList<byte> bytes = new List<byte>();
             if (string.IsNullOrEmpty(str))
             {
-                return bytes.ToArray();
+                return null;
             }
+            IList<byte> bytes = new List<byte>();
             var lst = str.Split(DIVIDOR);
             foreach (var s in lst)
             {
