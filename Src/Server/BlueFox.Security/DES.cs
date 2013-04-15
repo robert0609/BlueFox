@@ -7,7 +7,7 @@ using System.IO;
 
 namespace BlueFox.Security
 {
-    public class DES
+    public sealed class DES
     {
         private byte[] _rgbIV = new byte[] { 0x12, 0x34, 0x56, 120, 0x90, 0xab, 0xcd, 0xef };
 
